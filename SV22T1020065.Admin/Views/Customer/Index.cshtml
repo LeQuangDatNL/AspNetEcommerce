@@ -1,0 +1,58 @@
+﻿@model PagedResult<Customer>
+@{
+    ViewBag.Title = "Quản lý khách hàng";
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form id="formSearch"
+              method="get"
+              action="~/Customer/Search"
+              onsubmit="return paginationSearch(event, '#formSearch', 1);">
+
+            <input type="hidden" name="Page" value="@Model.Page" />
+
+            <div class="input-group">
+                <input type="text" name="SearchValue"
+                       value="@ViewBag.SearchValue"
+                       class="form-control"
+                       placeholder="Tên khách hàng, địa chỉ..." autofocus />
+
+                <button type="submit" class="btn btn-info">
+                    <i class="bi bi-search"></i> Tìm kiếm
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="searchResult">
+    @await Html.PartialAsync("Search", Model)
+</div>
+
+@section Scripts {
+    <script>
+        function paginationSearch(event, selector, page) {
+            if (event) event.preventDefault();
+
+            var $form = $(selector);
+            // Cập nhật giá trị trang vào input hidden
+            $form.find("input[name='Page']").val(page);
+
+            $.ajax({
+                url: $form.attr("action"),
+                type: $form.attr("method"),
+                data: $form.serialize(),
+                success: function (html) {
+                    // Thay thế nội dung table mà không load lại trang
+                    $("#searchResult").html(html);
+                },
+                error: function () {
+                    alert("Không thể tải dữ liệu. Vui lòng kiểm tra kết nối!");
+                }
+            });
+
+            return false;
+        }
+    </script>
+}

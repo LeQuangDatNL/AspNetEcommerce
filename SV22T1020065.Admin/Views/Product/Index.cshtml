@@ -1,0 +1,148 @@
+﻿@* @model PagedResult<Product>
+@{
+    ViewBag.Title = "Quản lý Mặt hàng";
+}
+
+@section PageToolBar {
+    <a href="~/Product/Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>
+        Bổ sung
+    </a>
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form id="formSearch" method="get" action="~/Product">
+            <div class="row g-2">
+                <div class="col-md-3">
+                    <label class="form-label">Loại hàng</label>
+                    <select class="form-select" name="categoryID">
+                        <option value="0">-- Tất cả loại hàng --</option>
+                        @foreach (var c in SV22T1020065.BusinessLayers.CommonDataService.ListCategories(""))
+                        {
+                            if (c.CategoryID.ToString() == Context.Request.Query["categoryID"])
+                            {
+                                <option value="@c.CategoryID" selected>@c.CategoryName</option>
+                            }
+                            else
+                            {
+                                <option value="@c.CategoryID">@c.CategoryName</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Nhà cung cấp</label>
+                    <select class="form-select" name="supplierID">
+                        <option value="0">-- Tất cả nhà cung cấp --</option>
+                        @foreach (var s in SV22T1020065.BusinessLayers.CommonDataService.ListSuppliers(""))
+                        {
+                            if (s.SupplierID.ToString() == Context.Request.Query["supplierID"])
+                            {
+                                <option value="@s.SupplierID" selected>@s.SupplierName</option>
+                            }
+                            else
+                            {
+                                <option value="@s.SupplierID">@s.SupplierName</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Khoảng giá</label>
+                    <div class="input-group">
+                        <input type="text" name="minPrice" class="form-control" placeholder="Từ"
+                               value="@Context.Request.Query["minPrice"]" />
+                        <span class="input-group-text">-</span>
+                        <input type="text" name="maxPrice" class="form-control" placeholder="Đến"
+                               value="@Context.Request.Query["maxPrice"]" />
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Tên mặt hàng</label>
+                    <div class="input-group">
+                        <input type="text" name="searchValue" class="form-control"
+                               placeholder="Tên mặt hàng..." value="@Context.Request.Query["searchValue"]" autofocus />
+                        <button class="btn btn-info d-flex align-items-center" type="submit">
+                            <i class="bi bi-search me-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="mb-2 text-muted">
+    Danh sách này có <strong>@Model.RowCount</strong> mặt hàng
+</div>
+
+<div class="card">
+    <div class="card-body p-1">
+        <table class="table table-bordered table-hover mb-0 align-middle">
+            <thead class="table-secondary">
+                <tr>
+                    <th style="width:80px;">Ảnh</th>
+                    <th>Mặt hàng</th>
+                    <th style="width:120px;">Đơn vị</th>
+                    <th style="width:120px;">Giá</th>
+                    <th class="text-center" style="width:120px;">Trạng thái</th>
+                    <th class="text-center" style="width:100px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.DataItems)
+                {
+                    <tr>
+                        <td class="text-center">
+                            <img src="@(string.IsNullOrEmpty(item.Photo) ? Url.Content("~/images/products/no-image.png") : Url.Content($"~/images/products/{item.Photo}"))"
+                                 class="img-thumbnail" style="width:60px; height:60px; object-fit:cover"
+                                 alt="@item.ProductName" />
+                        </td>
+                        <td>
+                            <strong>@item.ProductName</strong><br />
+                            <small class="text-muted">@item.ProductDescription</small>
+                        </td>
+                        <td>@item.Unit</td>
+                        <td class="text-end">@item.Price.ToString("N0")</td>
+                        <td class="text-center">
+                            @if (item.IsSelling)
+                            {
+                                <span class="badge bg-success">Đang bán</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Ngừng kinh doanh</span>
+                            }
+                        </td>
+                        <td class="text-center text-nowrap">
+                            <a href="~/Product/Edit/@item.ProductID" class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="~/Product/Delete/@item.ProductID" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (Model.PageCount > 1)
+    {
+        <div class="card-footer">
+            <ul class="pagination justify-content-center mb-0">
+                @for (int p = 1; p <= Model.PageCount; p++)
+                {
+                    <li class="page-item @(p == Model.Page ? "active" : "")">
+                        <a class="page-link" href="?page=@p&searchValue=@Context.Request.Query["searchValue"]&categoryID=@Context.Request.Query["categoryID"]&supplierID=@Context.Request.Query["supplierID"]&minPrice=@Context.Request.Query["minPrice"]&maxPrice=@Context.Request.Query["maxPrice"]">@p</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</div> *@
