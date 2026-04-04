@@ -1,4 +1,5 @@
-﻿@{
+﻿@model Shipper
+@{
     ViewBag.Title = "Xóa người giao hàng";
 }
 
@@ -25,7 +26,10 @@
             </div>
 
             <div class="card-body">
-                <form id="formDelete" method="post">
+                <form id="formDelete" method="post" asp-action="DeleteConfirmed" asp-controller="Shipper">
+
+                    <!-- 🔥 QUAN TRỌNG -->
+                    <input type="hidden" asp-for="ShipperID" />
 
                     <div class="alert alert-warning d-flex align-items-center">
                         <i class="bi bi-info-circle me-2"></i>
@@ -34,10 +38,10 @@
 
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Tên người giao hàng</dt>
-                        <dd class="col-sm-8">Trần Văn B</dd>
+                        <dd class="col-sm-8">@Model.ShipperName</dd>
 
                         <dt class="col-sm-4">Điện thoại</dt>
-                        <dd class="col-sm-8">0912345678</dd>
+                        <dd class="col-sm-8">@Model.Phone</dd>
                     </dl>
 
                 </form>

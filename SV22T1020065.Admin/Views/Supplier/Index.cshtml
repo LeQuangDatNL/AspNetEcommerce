@@ -12,87 +12,34 @@
 
 <div class="card mb-3">
     <div class="card-body">
-        <form id="formSearch" method="get" action="~/Supplier">
+        <form id="formSearch"
+              method="get"
+              action="@Url.Action("Search", "Supplier")"
+              data-target="searchResult"
+              onsubmit="return paginationSearch(event, this, 1);">
+
+            <input type="hidden" name="PageSize" value="@Model.PageSize" />
+
             <div class="input-group">
                 <input type="text" name="searchValue"
                        class="form-control"
                        placeholder="Tên nhà cung cấp..."
-                       value="@Context.Request.Query["searchValue"]" autofocus />
+                       value="@ViewBag.SearchValue" autofocus />
+
                 <button class="btn btn-info d-flex align-items-center" type="submit">
-                    <i class="bi bi-search me-1"></i>
+                    <i class="bi bi-search me-1"></i> Tìm kiếm
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<div class="mb-2 text-muted">
-    Danh sách này có <strong>@Model.RowCount</strong> nhà cung cấp
-</div>
+<div id="searchResult"></div>
 
-<div class="card">
-    <div class="card-body p-1">
-        <table class="table table-bordered table-hover mb-0">
-            <thead class="table-secondary">
-                <tr>
-                    <th>Tên nhà cung cấp</th>
-                    <th>Tên giao dịch</th>
-                    <th>Điện thoại</th>
-                    <th>Email</th>
-                    <th>Địa chỉ</th>
-                    <th>Tỉnh / Thành</th>
-                    <th class="text-center" style="width:120px;">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.DataItems)
-                {
-                    <tr>
-                        <td>@item.SupplierName</td>
-                        <td>@item.ContactName</td>
-                        <td>@item.Phone</td>
-                        <td>@item.Email</td>
-                        <td>@item.Address</td>
-                        <td>@item.Province</td>
-                        <td class="text-center text-nowrap">
-                            <a href="~/Supplier/Edit/@item.SupplierID" class="btn btn-sm btn-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="~/Supplier/Delete/@item.SupplierID" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <div class="card-footer">
-        <ul class="pagination justify-content-center">
-            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
-                <a class="page-link" href="?page=@(Model.Page - 1)&searchValue=@Context.Request.Query["searchValue"]">«</a>
-            </li>
-
-            @foreach (var p in Model.GetDisplayPages())
-            {
-                if (p.IsEllipsis)
-                {
-                    <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                    </li>
-                }
-                else
-                {
-                    <li class="page-item @(p.IsCurrent ? "active" : "")">
-                        <a class="page-link" href="?page=@p.Page&searchValue=@Context.Request.Query["searchValue"]">@p.Page</a>
-                    </li>
-                }
-            }
-
-            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
-                <a class="page-link" href="?page=@(Model.Page + 1)&searchValue=@Context.Request.Query["searchValue"]">»</a>
-            </li>
-        </ul>
-    </div>
-</div>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            paginationSearch(null, document.getElementById("formSearch"), 1);
+        });
+    </script>
+}

@@ -1,4 +1,5 @@
-﻿@{
+﻿@* @model PagedResult<Product>
+@{
     ViewBag.Title = "Lập đơn hàng";
 }
 
@@ -15,63 +16,74 @@
 
             <div class="card-body">
                 <!-- Search -->
-                <form method="get" class="mb-3">
+                <form method="get" action="~/Order/Create" class="mb-3">
                     <div class="input-group">
                         <input class="form-control"
                                name="searchValue"
+                               value="@(ViewBag.SearchValue ?? "")"
                                placeholder="Nhập tên mặt hàng cần tìm" autofocus />
-                        <button class="btn btn-primary">
+                        <button class="btn btn-primary" type="submit">
                             <i class="bi bi-search"></i>
                         </button>
                     </div>
                 </form>
 
                 <!-- Danh sách mặt hàng -->
-                @for (int i = 1; i <= 3; i++)
+                @if (Model?.DataItems != null && Model.DataItems.Any())
                 {
-                    <form method="post" class="border rounded p-2 mb-2">
-                        <strong>Macbook Pro 15" M2 2023</strong>
+                    foreach (var item in Model.DataItems)
+                    {
+                        <form method="post" action="~/Order/AddToCart" class="border rounded p-2 mb-2">
+                            <input type="hidden" name="productId" value="@item.ProductID" />
+                            <strong>@item.ProductName</strong>
 
-                        <div class="row mt-2">
-                            <div class="col-4">
-                                <img src="~/images/products/demo.png"
-                                     class="img-fluid border" style="max-height:100px" />
-                            </div>
-                            <div class="col-8">
-                                <div class="row g-2">
-                                    <div class="col-7">
-                                        <label class="form-label mb-0">Giá</label>
-                                        <input class="form-control form-control-sm money-input"
-                                               value="45000000" />
-                                    </div>
-                                    <div class="col-5">
-                                        <label class="form-label mb-0">SL</label>
-                                        <input type="number"
-                                               min="1"
-                                               value="1"
-                                               class="form-control form-control-sm" />
-                                    </div>
+                            <div class="row mt-2">
+                                <div class="col-4">
+                                    <img src="@(string.IsNullOrEmpty(item.Photo) ? Url.Content("~/images/products/no-image.png") : Url.Content($"~/images/products/{item.Photo}"))"
+                                         class="img-fluid border" style="max-height:100px" />
                                 </div>
+                                <div class="col-8">
+                                    <div class="row g-2">
+                                        <div class="col-7">
+                                            <label class="form-label mb-0">Giá</label>
+                                            <input class="form-control form-control-sm" readonly value="@item.Price.ToString("N0")" />
+                                        </div>
+                                        <div class="col-5">
+                                            <label class="form-label mb-0">SL</label>
+                                            <input type="number"
+                                                   name="quantity"
+                                                   min="1"
+                                                   value="1"
+                                                   class="form-control form-control-sm" />
+                                        </div>
+                                    </div>
 
-                                <button class="btn btn-sm btn-primary mt-2 w-100">
-                                    <i class="bi bi-cart-plus"></i>
-                                    Thêm vào giỏ
-                                </button>
+                                    <button class="btn btn-sm btn-primary mt-2 w-100" type="submit">
+                                        <i class="bi bi-cart-plus"></i>
+                                        Thêm vào giỏ
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted py-4">
+                        Không tìm thấy sản phẩm.
+                    </div>
                 }
             </div>
 
             <div class="card-footer">
                 <ul class="pagination justify-content-between mb-0">
                     <li class="page-item">
-                        <a class="page-link">
+                        <a class="page-link" href="javascript:;">
                             <i class="bi bi-chevron-left"></i>
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link">
+                        <a class="page-link" href="javascript:;">
                             <i class="bi bi-chevron-right"></i>
                         </a>
                     </li>
@@ -107,38 +119,51 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @for (int i = 1; i <= 3; i++)
+                                @{
+                                    var car = Session["cart"] as List<CartItem>;
+                                    int index = 0;
+                                    decimal totalAmount = 0;
+                                }
+                                @if (cart.Count > 0)
+                                {
+                                    foreach (var item in cart)
+                                    {
+                                        totalAmount += item.Quantity * item.SalePrice;
+                                        <tr>
+                                            <td class="text-center">@(++index)</td>
+                                            <td>@item.ProductName</td>
+                                            <td class="text-center">@item.Unit</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-end">@item.SalePrice.ToString("N0")</td>
+                                            <td class="text-end">@(item.Quantity * item.SalePrice).ToString("N0")</td>
+                                            <td class="text-end text-nowrap">
+                                                <a class="btn btn-sm btn-danger" href="~/Order/DeleteCartItem/0?productId=@item.ProductID">
+                                                    <i class="bi bi-dash"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
                                 {
                                     <tr>
-                                        <td class="text-center">@i</td>
-                                        <td>Laptop HP Gaming VICTUS</td>
-                                        <td class="text-center">Bộ</td>
-                                        <td class="text-center">1</td>
-                                        <td class="text-end">23.990.000</td>
-                                        <td class="text-end">23.990.000</td>
-                                        <td class="text-end text-nowrap">
-                                            <a class="btn btn-sm btn-primary open-modal" href="~/Order/EditCartItem?productId=456">
-                                                <i class="bi bi-pencil"></i>
-                                            </a>
-                                            <a class="btn btn-sm btn-danger open-modal" href="~/Order/DeleteCartItem?productId=456">
-                                                <i class="bi bi-dash"></i>
-                                            </a>
-                                        </td>
+                                        <td colspan="7" class="text-center text-muted">Giỏ hàng đang trống.</td>
                                     </tr>
                                 }
                             </tbody>
                             <tfoot>
                                 <tr>
                                     <th colspan="5" class="text-end">Tổng cộng:</th>
-                                    <th class="text-end">71,970,000</th>
+                                    <th class="text-end">
+                                        @totalAmount.ToString("N0")
+                                    </th>
                                     <th></th>
                                 </tr>
                             </tfoot>
                         </table>
 
                         <div class="text-end">
-                            <a class="btn btn-sm btn-danger mt-2 open-modal"                               
-                               href="~/Order/ClearCart">
+                            <a class="btn btn-sm btn-danger mt-2" href="~/Order/ClearCart">
                                 <i class="bi bi-trash"></i>
                                 Xóa giỏ hàng
                             </a>
@@ -197,4 +222,4 @@
             </div>
         </div>
     </div>
-</div>
+</div> *@

@@ -1,10 +1,11 @@
-﻿@{
+﻿@model Category
+@{
 }
 @section PageToolBar {
     <button type="submit" form="formEdit" class="btn btn-primary">
         <i class="bi bi-save"></i>
         Lưu dữ liệu
-    </button>    
+    </button>
     <a href="~/Category" class="btn btn-secondary ms-1">
         <i class="bi bi-arrow-left"></i>
         Quay lại
@@ -12,7 +13,7 @@
 }
 
 <div class="row justify-content-center">
-    <div class="col-12">
+    <div class="col-6">
         <div class="card card-primary card-outline">
             <div class="card-header">
                 <h5 class="card-title mb-0">
@@ -22,20 +23,13 @@
             </div>
 
             <div class="card-body">
-                <form id="formEdit" method="post">
+                <form id="formEdit" method="post" action="~/Category/SaveData">
+                    <input type="hidden" asp-for="CategoryID" />
 
                     <div class="mb-3">
                         <label class="form-label">Tên loại hàng</label>
-                        <input type="text"
-                               class="form-control"
-                               placeholder="Nhập tên loại hàng" autofocus />
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Mô tả</label>
-                        <textarea class="form-control"
-                                  rows="4"
-                                  placeholder="Nhập mô tả loại hàng"></textarea>
+                        <input type="text" asp-for="CategoryName" class="form-control" placeholder="Nhập tên loại hàng" autofocus />
+                        <span asp-validation-for="CategoryName" class="text-danger"></span>
                     </div>
 
                 </form>

@@ -1,4 +1,5 @@
-﻿@{
+﻿@model Customer
+@{
 }
 @section PageToolBar {
     <button type="submit" form="formEdit" class="btn btn-primary">
@@ -22,18 +23,21 @@
             </div>
 
             <div class="card-body">
-                <form id="formEdit" method="post">
+                <form id="formEdit" method="post" asp-action="SaveData" asp-controller="Customer">
+
+                    <input type="hidden" asp-for="CustomerID" />
 
                     <div class="row align-items-end">
                         <div class="col-md-5 mb-3">
                             <label class="form-label">Tên khách hàng</label>
-                            <input type="text"
+                            <input type="text" asp-for ="CustomerName"
                                    class="form-control"
                                    placeholder="Nhập tên khách hàng" autofocus />
+                            <span asp-validation-for="CustomerName" class="text-danger"></span>
                         </div>
                         <div class="col-md-5 mb-3">
                             <label class="form-label">Tên giao dịch</label>
-                            <input type="text"
+                            <input type="text" asp-for="ContactName"
                                    class="form-control"
                                    placeholder="Nhập tên giao dịch" />
                         </div>
@@ -42,10 +46,9 @@
                             <div class="form-check form-switch mt-2">
                                 <input class="form-check-input"
                                        type="checkbox"
-                                       id="IsActive"
-                                       checked />
-                                <label class="form-check-label" for="IsActive">
-                                    Đang hoạt động
+                                       asp-for="IsLocked" />
+                                <label class="form-check-label" for="IsLocked">
+                                    Đang khóa
                                 </label>
                             </div>
                         </div>
@@ -54,35 +57,32 @@
                     <div class="row">
                         <div class="col-md-5 mb-3">
                             <label class="form-label">Điện thoại</label>
-                            <input type="tel"
+                            <input type="tel" asp-for="Phone"
                                    class="form-control"
                                    placeholder="Nhập số điện thoại" />
                         </div>
 
                         <div class="col-md-7 mb-3">
                             <label class="form-label">Email</label>
-                            <input type="email"
+                            <input type="email" asp-for="Email"
                                    class="form-control"
                                    placeholder="Nhập email" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Địa chỉ</label>
-                        <textarea class="form-control"
+                        <textarea class="form-control" asp-for="Address"
                                   rows="3"
                                   placeholder="Nhập địa chỉ"></textarea>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Tỉnh / Thành</label>
-                        <select class="form-select">
-                            <option value="">-- Chọn tỉnh / thành --</option>
-                            <option>Hà Nội</option>
-                            <option>TP. Hồ Chí Minh</option>
-                            <option>Đà Nẵng</option>
-                            <option>Cần Thơ</option>
+                        <select class="form-select" asp-for="Province" asp-items="await SelectListHelper.Provinces()">
                         </select>
+                        <span asp-validation-for="Province" class="text-danger"></span>
                     </div>
                 </form>
             </div>

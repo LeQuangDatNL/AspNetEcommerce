@@ -1,8 +1,10 @@
-﻿@{
+﻿@model PagedResult<OrderViewInfo>
+@{
     Layout = null;
 }
+
 <div class="mb-2 text-muted">
-    Danh sách này có <strong>12</strong> đơn hàng
+    Danh sách này có <strong>@Model.RowCount</strong> đơn hàng
 </div>
 
 <div class="card">
@@ -21,22 +23,56 @@
                 </tr>
             </thead>
             <tbody>
-                @for (int i = 1; i <= 10; i++)
+                @if (Model.DataItems != null && Model.DataItems.Any())
+                {
+                    foreach (var item in Model.DataItems)
+                    {
+                        <tr>
+                            <td>@item.OrderTime.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@item.CustomerName</td>
+                            <td>@item.CustomerPhone</td>
+                            <td>@(item.AcceptTime?.ToString("dd/MM/yyyy") ?? "-")</td>
+                            <td>@item.EmployeeName</td>
+                            <td class="text-end">@item.TotalPrice.ToString("N0")</td>
+                            <td class="text-center">
+                                @switch (item.Status)
+                                {
+                                    case OrderStatusEnum.New:
+                                        <span class="badge bg-warning text-dark">Chờ duyệt</span>;
+                                        break;
+                                    case OrderStatusEnum.Accepted:
+                                        <span class="badge bg-info text-dark">Đã duyệt</span>;
+                                        break;
+                                    case OrderStatusEnum.Shipping:
+                                        <span class="badge bg-primary">Đang giao</span>;
+                                        break;
+                                    case OrderStatusEnum.Completed:
+                                        <span class="badge bg-success">Hoàn tất</span>;
+                                        break;
+                                    case OrderStatusEnum.Cancelled:
+                                        <span class="badge bg-danger">Bị hủy</span>;
+                                        break;
+                                    case OrderStatusEnum.Rejected:
+                                        <span class="badge bg-danger">Bị từ chối</span>;
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">@item.Status</span>;
+                                        break;
+                                }
+                            </td>
+                            <td class="text-center text-nowrap">
+                                <a href="@Url.Content("~/Order/Detail/" + item.OrderID)" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
-                        <td>10/10/2025</td>
-                        <td>Nguyễn Văn A</td>
-                        <td>0912345678</td>
-                        <td>11/10/2025</td>
-                        <td>Trần Thị B</td>
-                        <td class="text-end">1,250,000</td>
-                        <td class="text-center">
-                            <span class="badge bg-warning text-dark">Chờ duyệt</span>
-                        </td>
-                        <td class="text-center text-nowrap">
-                            <a href="~/Order/Detail/123" class="btn btn-sm btn-primary">
-                                <i class="bi bi-receipt"></i>
-                            </a>
+                        <td colspan="8" class="text-center text-muted">
+                            Không tìm thấy đơn hàng nào.
                         </td>
                     </tr>
                 }
@@ -44,17 +80,43 @@
         </table>
     </div>
 
-    <div class="card-footer">
-        <ul class="pagination justify-content-center mb-0">
-            @for (int p = 1; p <= 10; p++)
-            {
-                <li class="page-item">
+    @if (Model.PageCount > 1)
+    {
+        <div class="card-footer">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
                     <a class="page-link" href="javascript:;"
-                       onclick="paginationSearch(event, document.getElementById('formSearch'), @p)">
-                        @p
+                       onclick="paginationSearch(event, document.getElementById('formSearch'), @(Model.Page - 1))">
+                        «
                     </a>
                 </li>
-            }
-        </ul>
-    </div>
+
+                @foreach (var p in Model.GetDisplayPages())
+                {
+                    if (p.IsEllipsis)
+                    {
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item @(p.IsCurrent ? "active" : "")">
+                            <a class="page-link" href="javascript:;"
+                               onclick="paginationSearch(event, document.getElementById('formSearch'), @p.Page)">
+                                @p.Page
+                            </a>
+                        </li>
+                    }
+                }
+
+                <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                    <a class="page-link" href="javascript:;"
+                       onclick="paginationSearch(event, document.getElementById('formSearch'), @(Model.Page + 1))">
+                        »
+                    </a>
+                </li>
+            </ul>
+        </div>
+    }
 </div>

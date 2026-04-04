@@ -16,7 +16,7 @@ namespace SV22T1020065.BusinessLayers
             categoryDB = new CategoryRepository(Configuration.ConnectionString);
             productDB = new ProductRepository(Configuration.ConnectionString);
         }
-
+        // Các chức năng liên quan đến quản lý danh mục và mặt hàng
         #region CATEGORY (Loại hàng)
         public static async Task<PagedResult<Category>> ListCategoriesAsync(PaginationSearchInput input)
         {
@@ -32,7 +32,7 @@ namespace SV22T1020065.BusinessLayers
         {
             return await categoryDB.AddAsync(data);
         }
-
+        
         public static async Task<bool> UpdateCategoryAsync(Category data)
         {
             return await categoryDB.UpdateAsync(data);
@@ -44,6 +44,7 @@ namespace SV22T1020065.BusinessLayers
             return await categoryDB.DeleteAsync(categoryID);
         }
         #endregion
+
         #region PRODUCT (Mặt hàng)
 
         /// <summary>

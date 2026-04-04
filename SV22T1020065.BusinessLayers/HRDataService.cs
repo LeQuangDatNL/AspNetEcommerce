@@ -19,7 +19,7 @@ namespace SV22T1020065.BusinessLayers
         {
             employeeDB = new EmployeeRepository(Configuration.ConnectionString);
         }
-
+        // Các chức năng liên quan đến nhân sự
         #region Employee
 
         /// <summary>

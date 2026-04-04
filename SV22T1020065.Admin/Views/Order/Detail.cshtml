@@ -1,5 +1,17 @@
-﻿@{
-    ViewBag.Title = "Chi tiết đơn hàng";
+﻿@model OrderDetailsViewModel
+@{
+    ViewBag.Title = $"Chi tiết đơn hàng #{Model.Order.OrderID}";
+
+    var badgeClass = Model.Order.Status switch
+    {
+        OrderStatusEnum.New => "alert-warning text-dark",
+        OrderStatusEnum.Accepted => "alert-info text-dark",
+        OrderStatusEnum.Shipping => "alert-primary text-white",
+        OrderStatusEnum.Completed => "alert-success text-white",
+        OrderStatusEnum.Cancelled => "alert-danger text-white",
+        OrderStatusEnum.Rejected => "alert-danger text-white",
+        _ => "alert-secondary text-dark"
+    };
 }
 
 @section PageToolBar {
@@ -11,17 +23,17 @@
             Xử lý đơn hàng
         </button>
         <ul class="dropdown-menu">
-            <li><a class="dropdown-item open-modal" href="~/Order/Accept/123">Duyệt đơn hàng</a></li>
-            <li><a class="dropdown-item open-modal" href="~/Order/Shipping/123">Chuyển giao hàng</a></li>
-            <li><a class="dropdown-item open-modal" href="~/Order/Finish/123">Hoàn tất đơn hàng</a></li>
+            <li><a class="dropdown-item" href="@Url.Content("~/Order/Accept/" + Model.Order.OrderID)">Duyệt đơn hàng</a></li>
+            <li><a class="dropdown-item" href="@Url.Content("~/Order/Shipping/" + Model.Order.OrderID)">Chuyển giao hàng</a></li>
+            <li><a class="dropdown-item" href="@Url.Content("~/Order/Finish/" + Model.Order.OrderID)">Hoàn tất đơn hàng</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger open-modal" href="~/Order/Cancel/123">Hủy đơn hàng</a></li>
-            <li><a class="dropdown-item text-danger open-modal" href="~/Order/Reject/123">Từ chối đơn hàng</a></li>
+            <li><a class="dropdown-item text-danger" href="@Url.Content("~/Order/Cancel/" + Model.Order.OrderID)">Hủy đơn hàng</a></li>
+            <li><a class="dropdown-item text-danger" href="@Url.Content("~/Order/Reject/" + Model.Order.OrderID)">Từ chối đơn hàng</a></li>
         </ul>
     </div>
 
-    <a href="~/Order/Delete/123"
-       class="btn btn-danger ms-1 open-modal">
+    <a href="@Url.Content("~/Order/Delete/" + Model.Order.OrderID)"
+       class="btn btn-danger ms-1">
         <i class="bi bi-trash"></i>
         Xóa
     </a>
@@ -32,16 +44,18 @@
     </a>
 }
 
-<!-- TRẠNG THÁI ĐƠN HÀNG -->
-<div class="alert alert-success d-flex align-items-center mb-3">
-    <i class="bi bi-check-circle-fill fs-4 me-2"></i>
+<div class="alert @badgeClass d-flex align-items-center mb-3">
+    <i class="bi bi-info-circle-fill fs-4 me-2"></i>
     <div>
         <strong>Trạng thái đơn hàng:</strong>
-        Đã hoàn tất lúc <b>22/12/2022 17:00</b>
+        @Model.Order.Status.GetDescription()
+        @if (Model.Order.FinishedTime.HasValue)
+        {
+            <span>lúc <b>@Model.Order.FinishedTime.Value.ToString("dd/MM/yyyy HH:mm")</b></span>
+        }
     </div>
 </div>
 
-<!-- THÔNG TIN ĐƠN HÀNG -->
 <div class="card card-primary card-outline mb-3">
     <div class="card-header">
         <h5 class="card-title mb-0">
@@ -53,23 +67,30 @@
     <div class="card-body ps-4 pe-4">
         <div class="row mb-2">
             <div class="col-md-3 fw-bold">Mã đơn hàng</div>
-            <div class="col-md-3">1001</div>
+            <div class="col-md-3">@Model.Order.OrderID</div>
 
             <div class="col-md-3 fw-bold">Ngày lập</div>
-            <div class="col-md-3">20/12/2022 15:00</div>
+            <div class="col-md-3">@Model.Order.OrderTime.ToString("dd/MM/yyyy HH:mm")</div>
+        </div>
+
+        <div class="row mb-2">
+            <div class="col-md-3 fw-bold">Nhân viên phụ trách</div>
+            <div class="col-md-3">@Model.Order.EmployeeName</div>
+
+            <div class="col-md-3 fw-bold">Ngày nhận đơn</div>
+            <div class="col-md-3">@(Model.Order.AcceptTime?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
         </div>
 
         <div class="row">
-            <div class="col-md-3 fw-bold">Nhân viên phụ trách</div>
-            <div class="col-md-3">Trần Nguyên Phong</div>
+            <div class="col-md-3 fw-bold">Ngày giao</div>
+            <div class="col-md-3">@(Model.Order.ShippedTime?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
 
-            <div class="col-md-3 fw-bold">Ngày nhận đơn</div>
-            <div class="col-md-3">20/12/2022 17:00</div>
+            <div class="col-md-3 fw-bold">Ngày kết thúc</div>
+            <div class="col-md-3">@(Model.Order.FinishedTime?.ToString("dd/MM/yyyy HH:mm") ?? "-")</div>
         </div>
     </div>
 </div>
 
-<!-- THÔNG TIN KHÁCH HÀNG -->
 <div class="card card-info card-outline mb-3">
     <div class="card-header">
         <h5 class="card-title mb-0">
@@ -81,25 +102,24 @@
     <div class="card-body ps-4 pe-4">
         <div class="row mb-2">
             <div class="col-md-3 fw-bold">Khách hàng</div>
-            <div class="col-md-3">Trần Lê Thanh Hoàng</div>
+            <div class="col-md-3">@Model.Order.CustomerName</div>
 
             <div class="col-md-3 fw-bold">Tên giao dịch</div>
-            <div class="col-md-3">Ông Hoàng</div>
+            <div class="col-md-3">@Model.Order.CustomerContactName</div>
         </div>
 
         <div class="row mb-2">
             <div class="col-md-3 fw-bold">Email</div>
-            <div class="col-md-9">hoang.lethanh@gmail.com</div>
+            <div class="col-md-9">@Model.Order.CustomerEmail</div>
         </div>
 
         <div class="row">
             <div class="col-md-3 fw-bold">Địa chỉ</div>
-            <div class="col-md-9">77 Nguyễn Huệ, TP Huế</div>
+            <div class="col-md-9">@Model.Order.CustomerAddress</div>
         </div>
     </div>
 </div>
 
-<!-- THÔNG TIN GIAO HÀNG -->
 <div class="card card-success card-outline mb-3">
     <div class="card-header">
         <h5 class="card-title mb-0">
@@ -111,77 +131,25 @@
     <div class="card-body ps-4 pe-4">
         <div class="row mb-2">
             <div class="col-md-3 fw-bold">Người giao hàng</div>
-            <div class="col-md-3">Vũ Hoàng Tuấn Minh</div>
+            <div class="col-md-3">@Model.Order.ShipperName</div>
 
             <div class="col-md-3 fw-bold">Điện thoại</div>
-            <div class="col-md-3">0985666721</div>
+            <div class="col-md-3">@Model.Order.ShipperPhone</div>
         </div>
 
         <div class="row mb-2">
             <div class="col-md-3 fw-bold">Địa chỉ giao hàng</div>
-            <div class="col-md-9">77 Nguyễn Huệ, TP Huế</div>
+            <div class="col-md-9">@Model.Order.DeliveryAddress</div>
         </div>
 
         <div class="row">
             <div class="col-md-3 fw-bold">Tỉnh / Thành</div>
-            <div class="col-md-9">Thừa Thiên Huế</div>
+            <div class="col-md-9">@Model.Order.DeliveryProvince</div>
         </div>
     </div>
 </div>
 
-<!-- DANH SÁCH MẶT HÀNG -->
-<div class="card card-secondary card-outline">
-    <div class="card-header">
-        <h5 class="card-title mb-0">
-            <i class="bi bi-box-seam me-2"></i>
-            Danh sách mặt hàng
-        </h5>
-    </div>
-
-    <div class="card-body table-responsive">
-        <table class="table table-bordered table-hover align-middle">
-            <thead class="table-secondary text-center">
-                <tr>
-                    <th>STT</th>
-                    <th>Tên hàng</th>
-                    <th>ĐVT</th>
-                    <th>Số lượng</th>
-                    <th>Giá</th>
-                    <th>Thành tiền</th>
-                    <th style="width:90px"></th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (int i = 1; i <= 5; i++)
-                {
-                    <tr>
-                        <td class="text-center">@i</td>
-                        <td>Samsung Series 9 NP900X4C</td>
-                        <td class="text-center">Cái</td>
-                        <td class="text-center">2</td>
-                        <td class="text-end">18,700,000</td>
-                        <td class="text-end">37,400,000</td>
-                        <td class="text-end">
-                            <a href="~/Order/EditCartItem/123?productId=456" class="btn btn-sm btn-primary open-modal">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="~/Order/DeleteCartItem/123?productId=456" class="btn btn-sm btn-danger open-modal">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-            <tfoot>
-                <tr>
-                    <th colspan="5" class="text-end">Tổng cộng</th>
-                    <th class="text-end">187,000,000</th>
-                    <th></th>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-</div>
+@await Html.PartialAsync("ShowCart", Model.Details)
 
 @section Styles {
     <style>

@@ -5,84 +5,42 @@
 
 @section PageToolBar {
     <a href="~/Category/Create" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-1"></i>
-        Bổ sung
+        <i class="bi bi-plus-circle me-1"></i> Bổ sung
     </a>
 }
 
 <div class="card mb-3">
     <div class="card-body">
-        <form id="formSearch" method="get" action="~/Category">
+        <form id="formSearch"
+              method="get"
+              action="@Url.Action("Search", "Category")"
+              data-target="searchResult"
+              onsubmit="return paginationSearch(event, this, 1);">
+
+            @* GIỐNG CUSTOMER *@
+            <input type="hidden" name="PageSize" value="@Model.PageSize" />
+
             <div class="input-group">
-                <input type="text" name="searchValue"
+                <input type="text" name="SearchValue"
+                       value="@ViewBag.SearchValue"
                        class="form-control"
-                       placeholder="Tên loại hàng..."
-                       value="@Context.Request.Query["searchValue"]" autofocus />
-                <button class="btn btn-info d-flex align-items-center" type="submit">
-                    <i class="bi bi-search me-1"></i>
+                       placeholder="Tên loại hàng..." autofocus />
+
+                <button type="submit" class="btn btn-info">
+                    <i class="bi bi-search"></i> Tìm kiếm
                 </button>
             </div>
         </form>
     </div>
 </div>
 
-<div class="mb-2 text-muted">
-    Danh sách này có <strong>@Model.RowCount</strong> loại hàng
-</div>
+@* Vùng load AJAX *@
+<div id="searchResult"></div>
 
-<div class="card">
-    <div class="card-body p-1">
-        <table class="table table-bordered table-hover mb-0">
-            <thead class="table-secondary">
-                <tr>
-                    <th>Tên loại hàng</th>
-                    <th>Mô tả</th>
-                    <th class="text-center" style="width:100px;">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.DataItems)
-                {
-                    <tr>
-                        <td>@item.CategoryName</td>
-                        <td>@item.Description</td>
-                        <td class="text-center text-nowrap">
-                            <a href="~/Category/Edit/@item.CategoryID" class="btn btn-sm btn-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="~/Category/Delete/@item.CategoryID" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <div class="card-footer">
-        <ul class="pagination justify-content-center">
-            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
-                <a class="page-link" href="?page=@(Model.Page - 1)&searchValue=@Context.Request.Query["searchValue"]">«</a>
-            </li>
-
-            @foreach (var p in Model.GetDisplayPages())
-            {
-                if (p.IsEllipsis)
-                {
-                    <li class="page-item disabled"><span class="page-link">...</span></li>
-                }
-                else
-                {
-                    <li class="page-item @(p.IsCurrent ? "active" : "")">
-                        <a class="page-link" href="?page=@p.Page&searchValue=@Context.Request.Query["searchValue"]">@p.Page</a>
-                    </li>
-                }
-            }
-
-            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
-                <a class="page-link" href="?page=@(Model.Page + 1)&searchValue=@Context.Request.Query["searchValue"]">»</a>
-            </li>
-        </ul>
-    </div>
-</div>
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            paginationSearch(null, document.getElementById("formSearch"), 1);
+        });
+    </script>
+}

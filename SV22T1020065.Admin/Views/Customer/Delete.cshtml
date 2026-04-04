@@ -1,12 +1,20 @@
-﻿@{
+﻿@model Customer
+@{
     ViewBag.Title = "Xóa khách hàng";
 }
 
 @section PageToolBar {
-    <button type="submit" form="formDelete" class="btn btn-danger">
-        <i class="bi bi-trash me-1"></i>
-        Xóa
-    </button>
+    @if (ViewBag.CanDelete == true)
+    {
+        <button type="submit" form="formDelete" class="btn btn-danger">
+            <i class="bi bi-trash me-1"></i>
+            Xóa
+        </button>
+    }
+    else
+    {
+        <span class="text-muted">Không thể xóa khách hàng này</span>
+    }
 
     <a href="~/Customer" class="btn btn-secondary ms-1">
         <i class="bi bi-arrow-left"></i>
@@ -25,7 +33,7 @@
             </div>
 
             <div class="card-body">
-                <form id="formDelete" method="post">
+                <form id="formDelete" method="post" action="~/Customer/DeleteConfirmed/@Model.CustomerID">
 
                     <div class="alert alert-warning d-flex align-items-center">
                         <i class="bi bi-info-circle me-2"></i>
@@ -34,27 +42,34 @@
 
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Tên khách hàng</dt>
-                        <dd class="col-sm-8">Nguyễn Văn A</dd>
+                        <dd class="col-sm-8">@Model.CustomerName</dd>
 
                         <dt class="col-sm-4">Tên giao dịch</dt>
-                        <dd class="col-sm-8">Nguyen Van A Trading</dd>
+                        <dd class="col-sm-8">@Model.ContactName</dd>
 
                         <dt class="col-sm-4">Trạng thái</dt>
                         <dd class="col-sm-8">
-                            <span class="badge bg-success">Đang hoạt động</span>
+                            @if (Model.IsLocked == true)
+                            {
+                                <span class="badge bg-danger">Đang khóa</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success">Đang hoạt động</span>
+                            }
                         </dd>
 
                         <dt class="col-sm-4">Điện thoại</dt>
-                        <dd class="col-sm-8">0909876543</dd>
+                        <dd class="col-sm-8">@Model.Phone</dd>
 
                         <dt class="col-sm-4">Email</dt>
-                        <dd class="col-sm-8">customer@example.com</dd>
+                        <dd class="col-sm-8">@Model.Email</dd>
 
                         <dt class="col-sm-4">Địa chỉ</dt>
-                        <dd class="col-sm-8">456 Trần Hưng Đạo</dd>
+                        <dd class="col-sm-8">@Model.Address</dd>
 
                         <dt class="col-sm-4">Tỉnh / Thành</dt>
-                        <dd class="col-sm-8">Hà Nội</dd>
+                        <dd class="col-sm-8">@Model.Province</dd>
                     </dl>
 
                 </form>

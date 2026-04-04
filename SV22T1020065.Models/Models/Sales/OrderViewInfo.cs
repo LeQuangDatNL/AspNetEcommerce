@@ -22,6 +22,12 @@
         /// Email của khách hàng
         /// </summary>
         public string CustomerEmail { get; set; } = "";
+
+        /// <summary>
+        /// Tổng tiền đơn hàng
+        /// </summary>
+        public decimal TotalPrice { get; set; }
+
         /// <summary>
         /// Điện thoại khách hàng
         /// </summary>

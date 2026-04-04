@@ -1,6 +1,9 @@
-﻿@{
+﻿@model Supplier
+
+@{
     ViewBag.Title = "Xóa nhà cung cấp";
 }
+
 @section PageToolBar {
     <button type="submit" form="formDelete" class="btn btn-danger">
         <i class="bi bi-trash me-1"></i>
@@ -11,8 +14,9 @@
         Quay lại
     </a>
 }
+
 <div class="row justify-content-center">
-    <div class="col-12">
+    <div class="col-12 col-md-8">
         <div class="card card-danger card-outline">
             <div class="card-header">
                 <h5 class="card-title mb-0 text-danger">
@@ -20,34 +24,35 @@
                     Xác nhận xóa nhà cung cấp
                 </h5>
             </div>
-
             <div class="card-body">
-                <form id="formDelete" method="post">
+                <form id="formDelete" method="post" asp-action="Delete" asp-route-id="@Model.SupplierID">
                     <div class="alert alert-warning d-flex align-items-center">
                         <i class="bi bi-info-circle me-2"></i>
-                        Bạn có chắc chắn muốn xóa nhà cung cấp sau không?
-                    </div>                    
+                        Bạn có chắc chắn muốn xóa nhà cung cấp: <strong>@Model.SupplierName</strong> không?
+                    </div>
+
                     <dl class="row mb-0">
                         <dt class="col-sm-4">Tên nhà cung cấp</dt>
-                        <dd class="col-sm-8">Công ty ABC</dd>
+                        <dd class="col-sm-8">@Model.SupplierName</dd>
 
                         <dt class="col-sm-4">Tên giao dịch</dt>
-                        <dd class="col-sm-8">ABC Trading</dd>
+                        <dd class="col-sm-8">@Model.ContactName</dd>
 
                         <dt class="col-sm-4">Điện thoại</dt>
-                        <dd class="col-sm-8">0901234567</dd>
+                        <dd class="col-sm-8">@Model.Phone</dd>
 
                         <dt class="col-sm-4">Email</dt>
-                        <dd class="col-sm-8">contact@abc.com</dd>
+                        <dd class="col-sm-8">@Model.Email</dd>
 
                         <dt class="col-sm-4">Địa chỉ</dt>
-                        <dd class="col-sm-8">123 Lê Lợi</dd>
+                        <dd class="col-sm-8">@Model.Address</dd>
 
                         <dt class="col-sm-4">Tỉnh / Thành</dt>
-                        <dd class="col-sm-8">TP. Hồ Chí Minh</dd>
+                        <dd class="col-sm-8">@Model.Province</dd>
                     </dl>
                 </form>
             </div>
         </div>
     </div>
 </div>
+

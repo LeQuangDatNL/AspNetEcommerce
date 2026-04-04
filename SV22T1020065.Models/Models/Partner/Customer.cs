@@ -36,6 +36,7 @@
         /// <summary>
         /// Khách hàng hiện có bị khóa hay không?
         /// </summary>
-        public bool? IsLocked { get; set; }
+        public bool IsLocked { get; set; } = false;
+
     }
 }

@@ -26,7 +26,7 @@ public static class PartnerDataService
         customerDB = new CustomerRepository(Configuration.ConnectionString);
         shipperDB = new ShipperRepository(Configuration.ConnectionString);
     }
-
+    // Các chức năng liên quan đến quản lý đối tác
     #region Supplier
 
     /// <summary>

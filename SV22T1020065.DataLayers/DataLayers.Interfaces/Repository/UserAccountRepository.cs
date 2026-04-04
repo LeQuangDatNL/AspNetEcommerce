@@ -19,7 +19,7 @@ namespace SV22T1020065.DataLayers.MySQL
         /// <summary>
         /// Kiểm tra đăng nhập
         /// </summary>
-        public async Task<UserAccount?> Authorize(string userName, string password)
+        public async Task<UserAccount?> AuthorizeAsync(string userName, string password)
         {
             var passwordHash = ComputeHash(password);
 

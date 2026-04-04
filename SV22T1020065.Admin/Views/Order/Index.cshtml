@@ -15,26 +15,28 @@
               data-target="searchResult"
               onsubmit="paginationSearch(event, this, 1)">
 
+            <input type="hidden" name="PageSize" value="20" />
+
             <div class="row g-2">
                 <div class="col-md-3">
                     <label class="form-label">Trạng thái đơn hàng</label>
                     <select name="Status" class="form-select">
-                        <option value="">-- Tất cả --</option>
-                        <option>Đang chờ duyệt</option>
-                        <option>Đã duyệt</option>
-                        <option>Đang giao</option>
-                        <option>Hoàn tất</option>
-                        <option>Bị hủy</option>
-                        <option>Bị từ chối</option>
+                        <option value="0">-- Tất cả --</option>
+                        <option value="1">Đang chờ duyệt</option>
+                        <option value="2">Đã duyệt</option>
+                        <option value="3">Đang giao</option>
+                        <option value="4">Hoàn tất</option>
+                        <option value="-1">Bị hủy</option>
+                        <option value="-2">Bị từ chối</option>
                     </select>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Thời gian lập đơn hàng</label>
                     <div class="input-group">
-                        <input type="text" name="dateFrom" class="form-control date-picker" placeholder="Từ ngày..." />
+                        <input type="text" name="DateFrom" class="form-control date-picker" placeholder="Từ ngày..." />
                         <span class="input-group-text">-</span>
-                        <input type="text" name="dateTo" class="form-control date-picker" placeholder="...đến ngày" />
+                        <input type="text" name="DateTo" class="form-control date-picker" placeholder="...đến ngày" />
                     </div>
                 </div>
 
@@ -42,7 +44,7 @@
                     <label class="form-label">Tên khách hàng</label>
                     <div class="input-group">
                         <input type="text"
-                               name="searchValue"
+                               name="SearchValue"
                                class="form-control"
                                placeholder="Tên khách hàng..." autofocus />
 

@@ -1,0 +1,72 @@
+﻿@model List<OrderDetailViewInfo>
+@{
+    ViewBag.Layout = null;
+    int stt = 0; // biến thứ tự
+}
+
+<!-- DANH SÁCH MẶT HÀNG -->
+<div class="card card-secondary card-outline">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-box-seam me-2"></i>
+            Danh sách mặt hàng
+        </h5>
+    </div>
+
+    <div class="card-body table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-secondary text-center">
+                <tr>
+                    <th>STT</th>
+                    <th>Tên hàng</th>
+                    <th>ĐVT</th>
+                    <th>Số lượng</th>
+                    <th>Giá</th>
+                    <th>Thành tiền</th>
+                    <th style="width:90px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-center">@(++stt)</td>
+                            <td>@item.ProductName</td>
+                            <td class="text-center">@item.Unit</td> // Đơn vị
+                            <td class="text-center">@item.Quantity</td> // Số lượng
+                            <td class="text-end">@item.SalePrice.ToString("N0")</td> // Giá
+                            <td class="text-end">@item.TotalPrice.ToString("N0")</td> //
+                            <td class="text-end">
+                                <a href="~/Order/EditCartItem/@item.OrderID?productId=@item.ProductID"
+                                   class="btn btn-sm btn-primary open-modal">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="~/Order/DeleteCartItem/@item.OrderID?productId=@item.ProductID"
+                                   class="btn btn-sm btn-danger open-modal">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center">Không có sản phẩm nào</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5" class="text-end">Tổng cộng</th>
+                    <th class="text-end">
+                        @Model?.Sum(x => x.SalePrice * x.Quantity).ToString("N0")
+                    </th>
+                    <th></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

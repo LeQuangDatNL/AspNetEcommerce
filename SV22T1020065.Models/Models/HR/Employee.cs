@@ -36,6 +36,6 @@
         /// <summary>
         /// Nhân viên đang làm việc hay không?
         /// </summary>
-        public bool? IsWorking { get; set; }        
+        public bool IsWorking { get; set; } = false;     
     }
 }

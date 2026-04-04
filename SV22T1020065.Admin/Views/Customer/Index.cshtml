@@ -2,15 +2,20 @@
 @{
     ViewBag.Title = "Quản lý khách hàng";
 }
-
+@section PageToolBar {
+    <a href="~/Customer/Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i> Bổ sung
+    </a>
+}
 <div class="card mb-3">
     <div class="card-body">
         <form id="formSearch"
               method="get"
-              action="~/Customer/Search"
-              onsubmit="return paginationSearch(event, '#formSearch', 1);">
+              action="@Url.Action("Search", "Customer")"
+              data-target="searchResult"
+              onsubmit="return paginationSearch(event, this, 1);">
 
-            <input type="hidden" name="Page" value="@Model.Page" />
+            <input type="hidden" name="PageSize" value="@Model.PageSize" />
 
             <div class="input-group">
                 <input type="text" name="SearchValue"
@@ -27,32 +32,13 @@
 </div>
 
 <div id="searchResult">
-    @await Html.PartialAsync("Search", Model)
+
 </div>
 
 @section Scripts {
     <script>
-        function paginationSearch(event, selector, page) {
-            if (event) event.preventDefault();
-
-            var $form = $(selector);
-            // Cập nhật giá trị trang vào input hidden
-            $form.find("input[name='Page']").val(page);
-
-            $.ajax({
-                url: $form.attr("action"),
-                type: $form.attr("method"),
-                data: $form.serialize(),
-                success: function (html) {
-                    // Thay thế nội dung table mà không load lại trang
-                    $("#searchResult").html(html);
-                },
-                error: function () {
-                    alert("Không thể tải dữ liệu. Vui lòng kiểm tra kết nối!");
-                }
-            });
-
-            return false;
-        }
+        document.addEventListener("DOMContentLoaded", function () {
+            paginationSearch(null, document.getElementById("formSearch"), 1);
+        });
     </script>
 }

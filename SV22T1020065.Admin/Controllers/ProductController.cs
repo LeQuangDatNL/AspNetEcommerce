@@ -1,53 +1,76 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SV22T1020065.BusinessLayers;
 using SV22T1020065.Models.Catalog;
+using SV22T1020065.Models.Common;
+using System.Threading.Tasks;
 
 namespace SV22T1020065.Admin.Controllers
 {
-    /// <summary>
-    /// Cung cấp các chức năng quản lý sản phẩm
-    /// </summary>
+    [Authorize]
     public class ProductController : Controller
     {
+        private int PAGESIZE = ApplicationContext.PAGE_SIZE;
+        private static readonly string SESSION_KEY = "ProductSearchInput";
+
         /// <summary>
-        /// Tìm kiếm và hiển thị danh sách sản phẩm
+        /// Giao diện chính (AJAX)
         /// </summary>
-        /// <returns></returns>
-        private const int PAGESIZE = 5;
-        public async Task<IActionResult> Index(int page = 1, string searchValue = "",
-                                   int categoryID = 0, int supplierID = 0,
-                                   decimal minPrice = 0, decimal maxPrice = 0)
+        public async Task<IActionResult> Index(
+            int page = 1,
+            string searchValue = "",
+            int categoryID = 0,
+            int supplierID = 0,
+            decimal minPrice = 0,
+            decimal maxPrice = 0)
         {
-            // 1. Chuẩn bị đầu vào tìm kiếm
-            var input = new ProductSearchInput()
-            {
-                Page = page,
-                PageSize = PAGESIZE,
-                SearchValue = searchValue ?? "",
-                CategoryID = categoryID,
-                SupplierID = supplierID,
-                MinPrice = minPrice,
-                MaxPrice = maxPrice
-            };
+            var input = ApplicationContext.GetSessionData<ProductSearchInput>(SESSION_KEY)
+                        ?? new ProductSearchInput()
+                        {
+                            Page = page,
+                            PageSize = PAGESIZE,
+                            SearchValue = searchValue ?? "",
+                            CategoryID = categoryID,
+                            SupplierID = supplierID,
+                            MinPrice = minPrice,
+                            MaxPrice = maxPrice
+                        };
 
-            // 2. Lấy danh sách sản phẩm phân trang
+            // giữ lại filter cho UI
+            ViewBag.SearchValue = input.SearchValue;
+            ViewBag.CategoryID = input.CategoryID;
+            ViewBag.SupplierID = input.SupplierID;
+            ViewBag.MinPrice = input.MinPrice;
+            ViewBag.MaxPrice = input.MaxPrice;
+
+            ViewBag.SearchValue = input.SearchValue;
             var result = await CatalogDataService.ListProductsAsync(input);
-
-            // 3. Lấy dữ liệu cho các dropdown và truyền qua ViewBag
-        
-
-            // Giữ lại các giá trị lọc để hiển thị lại trên Form
-            ViewBag.CurrentSearchValue = searchValue;
-            ViewBag.CurrentCategoryID = categoryID;
-            ViewBag.CurrentSupplierID = supplierID;
-            ViewBag.CurrentMinPrice = minPrice > 0 ? minPrice.ToString() : "";
-            ViewBag.CurrentMaxPrice = maxPrice > 0 ? maxPrice.ToString() : "";
-
             return View(result);
         }
-        // Các Action khác (Create, Edit, Delete...) sẽ gọi Repository tương ứng
+
         /// <summary>
-        /// Bổ sung chức năng tạo mới sản phẩm
+        /// AJAX search + filter + phân trang
+        /// </summary>
+        public async Task<IActionResult> Search(ProductSearchInput input)
+        {
+            var result = await CatalogDataService.ListProductsAsync(input);
+
+            // lưu session
+            ApplicationContext.SetSessionData(SESSION_KEY, input);
+
+            // giữ lại filter
+            ViewBag.SearchValue = input.SearchValue;
+            ViewBag.CategoryID = input.CategoryID;
+            ViewBag.SupplierID = input.SupplierID;
+            ViewBag.MinPrice = input.MinPrice;
+            ViewBag.MaxPrice = input.MaxPrice;
+
+            return PartialView("Search", result); // ❗ quan trọng
+        }
+
+        // ===== Các hàm khác giữ nguyên =====
+        /// <summary>
+        /// Tạo mới sản phẩm và các dữ liệu liên quan (thuộc tính, hình ảnh)
         /// </summary>
         /// <returns></returns>
         public IActionResult Create()

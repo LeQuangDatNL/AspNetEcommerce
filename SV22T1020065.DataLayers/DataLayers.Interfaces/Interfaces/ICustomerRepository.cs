@@ -1,5 +1,4 @@
 ﻿using SV22T1020065.Models.Partner;
-
 namespace SV22T1020065.DataLayers.Interfaces
 {
     /// <summary>
