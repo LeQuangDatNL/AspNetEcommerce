@@ -16,13 +16,10 @@ namespace SV22T1020065.Admin.Controllers
         /// <summary>
         /// Giao diện chính (AJAX)
         /// </summary>
-        public async Task<IActionResult> Index(
-            int page = 1,
-            string searchValue = "",
-            int categoryID = 0,
-            int supplierID = 0,
-            decimal minPrice = 0,
-            decimal maxPrice = 0)
+        public async Task<IActionResult> Index(int page = 1, string searchValue = "", int categoryID = 0, int supplierID = 0, 
+            decimal minPrice = 0, 
+            decimal maxPrice = 0
+        )
         {
             var input = ApplicationContext.GetSessionData<ProductSearchInput>(SESSION_KEY)
                         ?? new ProductSearchInput()
@@ -42,7 +39,6 @@ namespace SV22T1020065.Admin.Controllers
             ViewBag.SupplierID = input.SupplierID;
             ViewBag.MinPrice = input.MinPrice;
             ViewBag.MaxPrice = input.MaxPrice;
-
             ViewBag.SearchValue = input.SearchValue;
             var result = await CatalogDataService.ListProductsAsync(input);
             return View(result);
@@ -55,15 +51,7 @@ namespace SV22T1020065.Admin.Controllers
         {
             var result = await CatalogDataService.ListProductsAsync(input);
 
-            // lưu session
             ApplicationContext.SetSessionData(SESSION_KEY, input);
-
-            // giữ lại filter
-            ViewBag.SearchValue = input.SearchValue;
-            ViewBag.CategoryID = input.CategoryID;
-            ViewBag.SupplierID = input.SupplierID;
-            ViewBag.MinPrice = input.MinPrice;
-            ViewBag.MaxPrice = input.MaxPrice;
 
             return PartialView("Search", result); // ❗ quan trọng
         }

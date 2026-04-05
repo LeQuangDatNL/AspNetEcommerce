@@ -1,4 +1,5 @@
-﻿@{
+﻿@model PagedResult<OrderViewInfo>
+@{
     ViewBag.Title = "Quản lý Đơn hàng";
 }
 @section PageToolBar {
@@ -15,28 +16,39 @@
               data-target="searchResult"
               onsubmit="paginationSearch(event, this, 1)">
 
-            <input type="hidden" name="PageSize" value="20" />
+            <input type="hidden" name="PageSize" value="@Model.PageSize" />
 
             <div class="row g-2">
                 <div class="col-md-3">
                     <label class="form-label">Trạng thái đơn hàng</label>
+
                     <select name="Status" class="form-select">
-                        <option value="0">-- Tất cả --</option>
-                        <option value="1">Đang chờ duyệt</option>
-                        <option value="2">Đã duyệt</option>
-                        <option value="3">Đang giao</option>
-                        <option value="4">Hoàn tất</option>
-                        <option value="-1">Bị hủy</option>
-                        <option value="-2">Bị từ chối</option>
+                        <option value="0" selected="@(ViewBag.Status == null ? "selected" : null)">-- Tất cả --</option>
+                        <option value="1" selected="@(ViewBag.Status == OrderStatusEnum.New ? "selected" : null)">Đang chờ duyệt</option>
+                        <option value="2" selected="@(ViewBag.Status == OrderStatusEnum.Accepted ? "selected" : null)">Đã duyệt</option>
+                        <option value="3" selected="@(ViewBag.Status == OrderStatusEnum.Shipping ? "selected" : null)">Đang giao</option>
+                        <option value="4" selected="@(ViewBag.Status == OrderStatusEnum.Completed ? "selected" : null)">Hoàn tất</option>
+                        <option value="-1" selected="@(ViewBag.Status == OrderStatusEnum.Cancelled ? "selected" : null)">Bị hủy</option>
+                        <option value="-2" selected="@(ViewBag.Status == OrderStatusEnum.Rejected ? "selected" : null)">Bị từ chối</option>
                     </select>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Thời gian lập đơn hàng</label>
                     <div class="input-group">
-                        <input type="text" name="DateFrom" class="form-control date-picker" placeholder="Từ ngày..." />
+                        <input type="date"
+                               name="DateFrom"
+                               class="form-control"
+                               placeholder="Từ ngày..."
+                               value="@ViewBag.DateFrom" />
+
                         <span class="input-group-text">-</span>
-                        <input type="text" name="DateTo" class="form-control date-picker" placeholder="...đến ngày" />
+
+                        <input type="date"  
+                               name="DateTo"
+                               class="form-control"
+                               placeholder="...đến ngày"
+                               value="@ViewBag.DateTo" />
                     </div>
                 </div>
 
@@ -44,9 +56,11 @@
                     <label class="form-label">Tên khách hàng</label>
                     <div class="input-group">
                         <input type="text"
-                               name="SearchValue"
+                               name="CustomerName"
                                class="form-control"
-                               placeholder="Tên khách hàng..." autofocus />
+                               placeholder="Tên khách hàng..."
+                               value="@ViewBag.CustomerName"
+                               autofocus />
 
                         <button class="btn btn-info d-flex align-items-center">
                             <i class="bi bi-search me-1"></i>

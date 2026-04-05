@@ -1,0 +1,46 @@
+@model Product
+@{
+    Layout = null;
+}
+
+<div class="modal-header">
+    <h5 class="modal-title">@Model.ProductName</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-4">
+            <img src="@(string.IsNullOrEmpty(Model.Photo)
+                                         ? Url.Content("~/images/products/demo.png")
+                                         : Url.Content($"~/images/products/{Model.Photo}"))"
+                 class="img-fluid rounded"
+                 alt="@Model.ProductName" />
+        </div>
+        <div class="col-md-8">
+            <h4>@Model.ProductName</h4>
+            @if (!string.IsNullOrEmpty(Model.ProductDescription))
+            {
+                <p class="text-muted">@Model.ProductDescription</p>
+            }
+            <p class="h5 text-danger">@Model.Price.ToString("N0") đ</p>
+            <p><strong>Đơn vị:</strong> @Model.Unit</p>
+            <p><strong>Trạng thái:</strong>
+                @if (Model.IsSelling)
+                {
+                    <span class="badge bg-success">Đang bán</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger">Ngừng bán</span>
+                }
+            </p>
+            <!-- Thêm nút thêm vào giỏ hàng nếu cần -->
+            <button class="btn btn-primary" onclick="addToCart(@Model.ProductID)">
+                <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
+            </button>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+</div>

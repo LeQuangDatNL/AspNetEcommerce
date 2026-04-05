@@ -18,23 +18,28 @@ namespace SV22T1020065.Admin.Controllers
     [Authorize(Roles ="${WebUserRoles.Administrator},{ WebUserRoles.DataManager}")]
     public class OrderController : Controller
     {
-        private const string ProductSearch = "OrderSearchProductInput";
+        private int PAGESIZE = ApplicationContext.PAGE_SIZE;
+        private const string OrderSearch = "OrderSearchProductInput";
         /// <summary>
         /// Hiển thị danh sách đơn hàng
         /// </summary>
         public async Task<IActionResult> Index(string customerName = "", OrderStatusEnum? status = null, DateTime? dateFrom = null, DateTime? dateTo = null, int? orderID = null)
         {
             // Chuẩn bị input tìm kiếm
-            var input = new OrderSearchInput
+            var input = ApplicationContext.GetSessionData<OrderSearchInput>(OrderSearch) ?? new OrderSearchInput
             {
-                CustomerName = customerName,            
-                Status = status ?? OrderStatusEnum.New, 
+                CustomerName = customerName,
+                Status = status ?? OrderStatusEnum.New,
                 DateFrom = dateFrom,
                 DateTo = dateTo,
                 Page = 1,
-                PageSize = 20
+                PageSize = PAGESIZE,
+                SearchValue = orderID.HasValue ? orderID.Value.ToString() : ""
             };
-
+            ViewBag.CustomerName = input.CustomerName;
+            ViewBag.Status = input.Status;
+            ViewBag.DateFrom = input.DateFrom?.ToString("yyyy-MM-dd");
+            ViewBag.DateTo = input.DateTo?.ToString("yyyy-MM-dd");  
             // Lấy danh sách đơn hàng
             var result = await SalesDataService.ListOrdersAsync(input);
 
@@ -46,16 +51,8 @@ namespace SV22T1020065.Admin.Controllers
         /// </summary>
         public async Task<IActionResult> Search(OrderSearchInput input)
         {
-            if (input == null)
-            {
-                input = new OrderSearchInput
-                {
-                    Page = 1,
-                    PageSize = 20
-                };
-            }
-
             var result = await SalesDataService.ListOrdersAsync(input);
+            ApplicationContext.SetSessionData(OrderSearch, input);
             return View("Search", result);
         }
 
@@ -98,7 +95,7 @@ namespace SV22T1020065.Admin.Controllers
                 SalePrice = product.Price
             };
 
-            ShopingCartService.AddToCart(item);
+            ShoppingCartService.AddToCart(item);
             return RedirectToAction("Create");
         }
 
@@ -124,7 +121,7 @@ namespace SV22T1020065.Admin.Controllers
         /// <returns></returns>
         public IActionResult showCart()
         {
-            var cart = ShopingCartService.GetShopingCart();
+            var cart = ShoppingCartService.GetShoppingCart();
             return View(cart);
         }
         /// <summary>
@@ -173,7 +170,7 @@ namespace SV22T1020065.Admin.Controllers
         {
             if (id == 0)
             {
-                ShopingCartService.RemoveFromCart(productId);
+                ShoppingCartService.RemoveFromCart(productId);
                 return RedirectToAction("Create");
             }
 
@@ -185,7 +182,7 @@ namespace SV22T1020065.Admin.Controllers
         /// </summary>
         public IActionResult ClearCart()
         {
-            ShopingCartService.ClearCart();
+            ShoppingCartService.ClearCart();
             return RedirectToAction("Create");
         }
 

@@ -10,14 +10,14 @@ namespace SV22T1020065.Admin.AppCodes
     /// Cung cấp các chức năng xử lý trên giỏ hàng, bao gồm thêm, sửa, xóa sản phẩm trong giỏ hàng, tính tổng tiền, v.v.
     /// Giỏ hàng lưu bằng sesion
     /// </summary>
-    public static class ShopingCartService
+    public static class ShoppingCartService
     {
         /// <summary
         /// Tên biến để lưu giỏ hàng trong session
         /// </summary>
-        private static readonly string SESSION_KEY = "ShopingCart";
+        private static readonly string SESSION_KEY = "ShoppingCart";
         // Lấy giỏ hàng từ session
-        public static List<OrderDetailViewInfo> GetShopingCart()
+        public static List<OrderDetailViewInfo> GetShoppingCart()
         {
             var cart = ApplicationContext.GetSessionData<List<OrderDetailViewInfo>>(SESSION_KEY);
             if (cart == null)
@@ -30,13 +30,13 @@ namespace SV22T1020065.Admin.AppCodes
         // Lấy thông tin sản phẩm trong giỏ hàng
         public static OrderDetailViewInfo? GetCartItem(int productId)
         {
-            var cart = GetShopingCart();
+            var cart = GetShoppingCart();
             return cart.FirstOrDefault(c => c.ProductID == productId);
         }
         // Thêm sản phẩm vào giỏ hàng
         public static void AddToCart(OrderDetailViewInfo item)
         {
-            var cart = GetShopingCart();
+            var cart = GetShoppingCart();
             var existingItem = cart.FirstOrDefault(c => c.ProductID == item.ProductID);
             if (existingItem != null)
             {
@@ -52,7 +52,7 @@ namespace SV22T1020065.Admin.AppCodes
         // Cập nhật số lượng sản phẩm trong giỏ hàng
         public static void UpdateCartItem(int productId, int quantity, int salePrice)
         {
-            var cart = GetShopingCart();
+            var cart = GetShoppingCart();
             var existingItem = cart.FirstOrDefault(c => c.ProductID == productId);
             if (existingItem != null)
             {
@@ -64,7 +64,7 @@ namespace SV22T1020065.Admin.AppCodes
         // Xóa sản phẩm khỏi giỏ hàng
         public static void RemoveFromCart(int productId)
         {
-            var cart = GetShopingCart();
+            var cart = GetShoppingCart();
             var existingItem = cart.FirstOrDefault(c => c.ProductID == productId);
             if (existingItem != null)
             {
