@@ -1,0 +1,43 @@
+@{
+    ViewBag.Title = "Đặt hàng thành công";
+    var orderId = ViewBag.OrderId?.ToString() ?? "";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fa fa-check-circle fa-5x text-success"></i>
+                </div>
+                <h2 class="text-success mb-3">Đặt hàng thành công!</h2>
+                <h5 class="text-muted mb-4">Cảm ơn bạn đã đặt hàng. Đơn hàng của bạn đã được ghi nhận.</h5>
+
+                @if (!string.IsNullOrEmpty(orderId))
+                {
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading mb-2">Mã đơn hàng của bạn:</h6>
+                        <h4 class="mb-0 text-primary">#@orderId</h4>
+                    </div>
+                }
+
+                <p class="mb-4">
+                    Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất để xác nhận đơn hàng.<br />
+                    Bạn có thể theo dõi trạng thái đơn hàng trong phần <strong>Lịch sử đơn hàng</strong>.
+                </p>
+
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="~/ShopOrder/Details/@orderId" class="btn btn-outline-primary">
+                        <i class="fa fa-eye"></i> Xem chi tiết đơn hàng
+                    </a>
+                    <a href="~/ShopOrder/History" class="btn btn-outline-secondary">
+                        <i class="fa fa-history"></i> Lịch sử đơn hàng
+                    </a>
+                    <a href="~/ShopProduct" class="btn btn-success">
+                        <i class="fa fa-shopping-bag"></i> Tiếp tục mua sắm
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

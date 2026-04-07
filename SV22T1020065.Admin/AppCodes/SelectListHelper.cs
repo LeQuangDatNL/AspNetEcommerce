@@ -86,13 +86,13 @@
             {
                 return new List<SelectListItem>
                 {
-                    new SelectListItem() { Value = "", Text = "-- Trạng thái ---" },
-                    new SelectListItem() { Value = OrderStatusEnum.New.ToString(), Text = OrderStatusEnum.New.GetDescription() },
-                    new SelectListItem() { Value = OrderStatusEnum.Accepted.ToString(), Text = OrderStatusEnum.Accepted.GetDescription() },
-                    new SelectListItem() { Value = OrderStatusEnum.Shipping.ToString(), Text = OrderStatusEnum.Shipping.GetDescription() },
-                    new SelectListItem() { Value = OrderStatusEnum.Completed.ToString(), Text = OrderStatusEnum.Completed.GetDescription() },
-                    new SelectListItem() { Value = OrderStatusEnum.Rejected.ToString(), Text = OrderStatusEnum.Rejected.GetDescription() },
-                    new SelectListItem() { Value = OrderStatusEnum.Cancelled.ToString(), Text = OrderStatusEnum.Cancelled.GetDescription() },
+                    new SelectListItem() { Value = "0", Text = "-- Trạng thái --" },
+                    new SelectListItem() { Value = ((int)OrderStatusEnum.New).ToString(), Text = OrderStatusEnum.New.GetDescription() },
+                    new SelectListItem() { Value = ((int)OrderStatusEnum.Accepted).ToString(), Text = OrderStatusEnum.Accepted.GetDescription() },
+                    new SelectListItem() { Value = ((int)OrderStatusEnum.Shipping).ToString(), Text = OrderStatusEnum.Shipping.GetDescription() },
+                    new SelectListItem() { Value = ((int)OrderStatusEnum.Completed).ToString(), Text = OrderStatusEnum.Completed.GetDescription() },
+                    new SelectListItem() { Value = ((int)OrderStatusEnum.Rejected).ToString(), Text = OrderStatusEnum.Rejected.GetDescription() },
+                    new SelectListItem() { Value = ((int)OrderStatusEnum.Cancelled).ToString(), Text = OrderStatusEnum.Cancelled.GetDescription() },
                 };
             }
         }

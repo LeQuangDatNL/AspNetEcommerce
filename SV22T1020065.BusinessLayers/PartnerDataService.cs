@@ -1,7 +1,7 @@
 ﻿using SV22T1020065.BusinessLayers;
 using SV22T1020065.DataLayers.Interfaces;
-using SV22T1020065.DataLayers.Repositories;
-using SV22T1020065.DataLayers.SQLServer;
+using SV22T1020065.DataLayers.Repository;
+using SV22T1020065.DataLayers;
 using SV22T1020065.Models.Common;
 using SV22T1020065.Models.Partner;
 

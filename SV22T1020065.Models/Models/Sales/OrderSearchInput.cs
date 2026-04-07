@@ -23,5 +23,8 @@ namespace SV22T1020065.Models.Sales
         /// Tên khách hàng
         /// </summary>
         public string CustomerName { get ; set; } = "";
+        /// <summary>
+        /// Tên khách hàng
+        /// </summary>
     }
 }

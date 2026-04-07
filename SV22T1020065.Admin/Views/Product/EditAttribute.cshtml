@@ -1,4 +1,6 @@
-﻿@{
+﻿@model ProductAttribute
+@{
+    var productId = ViewBag.ProductId ?? 0;
 }
 @section PageToolBar {
     <button type="submit" form="formEdit" class="btn btn-primary">
@@ -6,7 +8,7 @@
         Lưu thuộc tính
     </button>
 
-    <a href="~/Product/Edit/123#attributes" class="btn btn-secondary ms-1">
+    <a href="@Url.Action("Edit", "Product", new { id = productId })#attribute" class="btn btn-secondary ms-1">
         <i class="bi bi-arrow-left"></i>
         Quay lại
     </a>
@@ -19,15 +21,16 @@
             </div>
 
             <div class="card-body">
-                <form id="formEdit" method="post">
+                <form id="formEdit" method="post" asp-action="EditAttribute" asp-controller="Product" asp-route-id="@productId" asp-route-attributeId="@Model.AttributeID">
+                    <input asp-for="AttributeID" type="hidden" />
+                    <input asp-for="ProductID" type="hidden" />
 
                     <div class="row mb-3">
                         <label class="col-sm-3 fw-semibold">
                             Tên thuộc tính
                         </label>
                         <div class="col-sm-9">
-                            <input type="text"
-                                   name="AttributeName"
+                            <input asp-for="AttributeName"
                                    class="form-control"
                                    placeholder="Ví dụ: Màu sắc, Kích thước"
                                    required autofocus />
@@ -39,8 +42,7 @@
                             Giá trị thuộc tính
                         </label>
                         <div class="col-sm-9">
-                            <input type="text"
-                                   name="AttributeValue"
+                            <input asp-for="AttributeValue"
                                    class="form-control"
                                    placeholder="Ví dụ: Đỏ, XL, 500g"
                                    required />
@@ -52,10 +54,8 @@
                             Thứ tự hiển thị
                         </label>
                         <div class="col-sm-3">
-                            <input type="number"
-                                   name="DisplayOrder"
+                            <input asp-for="DisplayOrder"
                                    class="form-control"
-                                   value="1"
                                    min="1" />
                         </div>
                     </div>

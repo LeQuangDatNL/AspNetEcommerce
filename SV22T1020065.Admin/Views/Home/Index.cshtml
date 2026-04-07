@@ -1,5 +1,39 @@
 ﻿@{
+    var userData = ViewBag.UserData as SV22T1020065.Admin.WebUserData;
 }
+
+@* TODO: Hiển thị thông tin người dùng hiện tại từ cookie và tách role ra riêng biệt. *@
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-person-circle me-1"></i> Người dùng hiện tại</h5>
+            </div>
+            <div class="card-body">
+                @if (userData != null)
+                {
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Tên hiển thị:</strong> @userData.DisplayName</p>
+                            <p class="mb-1"><strong>Tên đăng nhập:</strong> @userData.UserName</p>
+                            <p class="mb-1"><strong>Email:</strong> @userData.Email</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="mb-1"><strong>Vai trò:</strong> @(userData.Roles != null && userData.Roles.Any() ? string.Join(", ", userData.Roles) : "Chưa gán")</p>
+                            <p class="mb-1"><strong>Mã người dùng:</strong> @userData.UserId</p>
+                            <p class="mb-0 text-muted">Dữ liệu này được lấy từ cookie xác thực hiện tại.</p>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-warning mb-0">Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Thống kê nhanh -->
 <div class="row">

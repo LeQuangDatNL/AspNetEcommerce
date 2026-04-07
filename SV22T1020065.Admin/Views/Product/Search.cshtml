@@ -1,6 +1,6 @@
 ﻿@model PagedResult<Product>
 @{
-    Layout = null; // Cực kỳ quan trọng: Để không bị load lặp lại Layout (Menu/Header)
+    Layout = null; 
 }
 <div class="mb-2 text-muted">
     Danh sách này có <strong>@Model.RowCount</strong> mặt hàng
@@ -27,8 +27,8 @@
                         <tr>
                             <td class="text-center">
                                 <img src="@(string.IsNullOrEmpty(item.Photo)
-                                                                                   ? Url.Content("~/images/products/demo.png")
-                                                                                   : Url.Content($"~/images/products/{item.Photo}"))"
+                                    ? Url.Content("~/images/products/demo.png")
+                                    : Url.Content($"~/images/products/{item.Photo}"))"
                              class="img-thumbnail"
                              alt="@item.ProductName" />
                     </td>

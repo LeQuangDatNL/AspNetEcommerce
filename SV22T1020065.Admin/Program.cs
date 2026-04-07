@@ -1,4 +1,4 @@
-using SV22T1020065.Admin;
+﻿using SV22T1020065.Admin;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Globalization;
 
@@ -56,7 +56,7 @@ var cultureInfo = new CultureInfo("vi-VN");
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
-//Configure Application Context
+//cấu hình ApplicationContext để có thể truy cập HttpContext, WebHostEnvironment và Configuration từ Business Layer
 ApplicationContext.Configure
 (
     httpContextAccessor: app.Services.GetRequiredService<IHttpContextAccessor>(),
@@ -64,7 +64,7 @@ ApplicationContext.Configure
     configuration: app.Configuration
 );
 
-//Get Connection String from appsettings.json
+//Kết nối đến database (Lấy chuỗi kết nối từ appsettings.json)
 string connectionString = builder.Configuration.GetConnectionString("LiteCommerceDB")
     ?? throw new InvalidOperationException("ConnectionString 'LiteCommerceDB' not found.");
 

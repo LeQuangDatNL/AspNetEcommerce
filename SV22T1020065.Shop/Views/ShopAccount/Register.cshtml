@@ -1,0 +1,74 @@
+﻿@model SV22T1020065.Models.Models.Account.AccountCustomer
+
+@{
+    ViewBag.Title = "Đăng ký";
+}
+
+<div class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+    <div class="card shadow-lg rounded-4 p-4" style="width:100%; max-width:540px;">
+        <div class="text-center mb-4">
+            <h3 class="fw-bold">Đăng ký tài khoản</h3>
+            <p class="text-muted mb-0">Tạo tài khoản mới để mua sắm và theo dõi đơn hàng</p>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger small">@ViewBag.Error</div>
+        }
+        @if (ViewBag.Success != null)
+        {
+            <div class="alert alert-success small">@ViewBag.Success</div>
+        }
+
+        <form method="post" action="~/ShopAccount/Register">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label small text-secondary">Tên khách hàng</label>
+                    <input asp-for="CustomerName" class="form-control form-control-lg" placeholder="Tên khách hàng" />
+                    <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-secondary">Tên giao dịch</label>
+                    <input asp-for="ContactName" class="form-control form-control-lg" placeholder="Tên giao dịch" />
+                    <span asp-validation-for="ContactName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-secondary">Email</label>
+                    <input asp-for="Email" type="email" class="form-control form-control-lg" placeholder="Email" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-secondary">Điện thoại</label>
+                    <input asp-for="Phone" class="form-control form-control-lg" placeholder="Số điện thoại" />
+                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-secondary">Tỉnh/Thành</label>
+                    <select asp-for="Province" asp-items="ViewBag.Provinces" class="form-select form-select-lg"></select>
+                    <span asp-validation-for="Province" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-secondary">Địa chỉ</label>
+                    <input asp-for="Address" class="form-control form-control-lg" placeholder="Địa chỉ" />
+                    <span asp-validation-for="Address" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-secondary">Mật khẩu</label>
+                    <input type="password" name="Password" class="form-control form-control-lg" placeholder="Mật khẩu" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small text-secondary">Xác nhận mật khẩu</label>
+                    <input type="password" name="ConfirmPassword" class="form-control form-control-lg" placeholder="Xác nhận mật khẩu" />
+                </div>
+            </div>
+
+            <div class="d-grid mt-4">
+                <button class="btn btn-success btn-lg">Đăng ký</button>
+            </div>
+
+            <div class="text-center mt-3 small text-muted">
+                Đã có tài khoản? <a href="~/ShopAccount/Login">Đăng nhập ngay</a>
+            </div>
+        </form>
+    </div>
+</div>

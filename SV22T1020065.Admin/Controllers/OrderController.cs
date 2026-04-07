@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using SV22T1020065.Admin;
 using SV22T1020065.Admin.AppCodes;
 using SV22T1020065.BusinessLayers;
@@ -15,7 +16,7 @@ namespace SV22T1020065.Admin.Controllers
     /// <summary>
     /// Các chức năng quản lý nghiệp vụ liên quan đến đơn hàng
     /// </summary>
-    [Authorize(Roles ="${WebUserRoles.Administrator},{ WebUserRoles.DataManager}")]
+    [Authorize(Roles = WebUserRoles.Administrator)]
     public class OrderController : Controller
     {
         private int PAGESIZE = ApplicationContext.PAGE_SIZE;
@@ -51,7 +52,7 @@ namespace SV22T1020065.Admin.Controllers
         /// </summary>
         public async Task<IActionResult> Search(OrderSearchInput input)
         {
-            var result = await SalesDataService.ListOrdersAsync(input);
+            var result = await SalesDataService.ListOrdersAsync(input); 
             ApplicationContext.SetSessionData(OrderSearch, input);
             return View("Search", result);
         }
@@ -72,8 +73,82 @@ namespace SV22T1020065.Admin.Controllers
             }
 
             ViewBag.SearchValue = input.SearchValue;
+            ViewBag.Customers = await GetCustomerSelectListAsync();
+            ViewBag.Provinces = await SelectListHelper.Provinces();
+            ViewBag.Cart = ShoppingCartService.GetShoppingCart();
+
             var result = await CatalogDataService.ListProductsAsync(input);
             return View(result);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create(int customerId, string deliveryProvince, string deliveryAddress)
+        {
+            var cart = ShoppingCartService.GetShoppingCart();
+            if (cart == null || !cart.Any())
+                ModelState.AddModelError("", "Giỏ hàng đang trống.");
+
+            if (customerId <= 0)
+                ModelState.AddModelError("customerId", "Vui lòng chọn khách hàng.");
+
+            if (string.IsNullOrWhiteSpace(deliveryProvince))
+                ModelState.AddModelError("deliveryProvince", "Vui lòng chọn tỉnh/thành.");
+
+            if (string.IsNullOrWhiteSpace(deliveryAddress))
+                ModelState.AddModelError("deliveryAddress", "Vui lòng nhập địa chỉ giao hàng.");
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.SearchValue = "";
+                ViewBag.Customers = await GetCustomerSelectListAsync();
+                ViewBag.Provinces = await SelectListHelper.Provinces();
+                ViewBag.Cart = cart;
+                ViewBag.CustomerId = customerId;
+                ViewBag.DeliveryProvince = deliveryProvince;
+                ViewBag.DeliveryAddress = deliveryAddress;
+                ViewBag.Error = "Vui lòng kiểm tra lại thông tin đơn hàng.";
+
+                var result = await CatalogDataService.ListProductsAsync(new ProductSearchInput { Page = 1, PageSize = 5, SearchValue = "" });
+                return View(result);
+            }
+
+            var order = new Order
+            {
+                CustomerID = customerId,
+                DeliveryProvince = deliveryProvince,
+                DeliveryAddress = deliveryAddress
+            };
+
+            int orderId = await SalesDataService.AddOrderAsync(order);
+            if (orderId <= 0)
+            {
+                ModelState.AddModelError("", "Không thể tạo đơn hàng.");
+                ViewBag.SearchValue = "";
+                ViewBag.Customers = await GetCustomerSelectListAsync();
+                ViewBag.Provinces = await SelectListHelper.Provinces();
+                ViewBag.Cart = cart;
+                ViewBag.CustomerId = customerId;
+                ViewBag.DeliveryProvince = deliveryProvince;
+                ViewBag.DeliveryAddress = deliveryAddress;
+                var result = await CatalogDataService.ListProductsAsync(new ProductSearchInput { Page = 1, PageSize = 5, SearchValue = "" });
+                return View(result);
+            }
+
+            foreach (var item in cart)
+            {
+                var detail = new OrderDetail
+                {
+                    OrderID = orderId,
+                    ProductID = item.ProductID,
+                    Quantity = item.Quantity,
+                    SalePrice = item.SalePrice
+                };
+
+                await SalesDataService.AddDetailAsync(detail);
+            }
+
+            ShoppingCartService.ClearCart();
+            return RedirectToAction("Detail", new { id = orderId });
         }
 
         [HttpPost]
@@ -146,27 +221,66 @@ namespace SV22T1020065.Admin.Controllers
         /// <summary>
         /// Chỉnh sửa mặt hàng trong giỏ
         /// </summary>
-        /// <param name="id">Mã đơn hàng ( = 0 xử lý giỏ hàng , khác sử lý đơn hàng)</param>
+        /// <param name="id">Mã đơn hàng ( = 0 xử lý giỏ hàng , khác xử lý đơn hàng)</param>
         /// <param name="productId">Mã sản phẩm</param>
-        public IActionResult EditCartItem(int id, int productId)
+        public async Task<IActionResult> EditCartItem(int id, int productId)
         {
             if (id == 0)
             {
-                // Xử lý giỏ hàng
+                var cartItem = ShoppingCartService.GetCartItem(productId);
+                if (cartItem == null)
+                    return NotFound();
+
+                ViewBag.OrderId = id;
+                return View(cartItem);
             }
-            else
+
+            var orderItem = await SalesDataService.GetDetailAsync(id, productId);
+            if (orderItem == null)
+                return NotFound();
+
+            ViewBag.OrderId = id;
+            return View(orderItem);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditCartItem(int id, int productId, int quantity)
+        {
+            if (quantity < 1)
+                quantity = 1;
+
+            if (id == 0)
             {
-                // Xử lý đơn hàng 
+                var cartItem = ShoppingCartService.GetCartItem(productId);
+                if (cartItem == null)
+                    return NotFound();
+
+                ShoppingCartService.UpdateCartItem(productId, quantity, (int)cartItem.SalePrice);
+                return RedirectToAction("Create");
             }
-            return View();
+
+            var orderItem = await SalesDataService.GetDetailAsync(id, productId);
+            if (orderItem == null)
+                return NotFound();
+
+            var updated = new OrderDetail
+            {
+                OrderID = id,
+                ProductID = productId,
+                Quantity = quantity,
+                SalePrice = orderItem.SalePrice
+            };
+
+            await SalesDataService.UpdateDetailAsync(updated);
+            return RedirectToAction("Detail", new { id });
         }
 
         /// <summary>
         /// Xóa mặt hàng khỏi giỏ ra khỏi đơn hàng
         /// </summary>
-        /// <param name="id">Mã đơn hàng ( = 0 xử lý giỏ hàng , khác sử lý đơn hàng)</param>
+        /// <param name="id">Mã đơn hàng ( = 0 xử lý giỏ hàng , khác xử lý đơn hàng)</param>
         /// <param name="productId">Mã sản phẩm</param>
-        public IActionResult DeleteCartItem(int id, int productId)
+        public async Task<IActionResult> DeleteCartItem(int id, int productId)
         {
             if (id == 0)
             {
@@ -174,6 +288,7 @@ namespace SV22T1020065.Admin.Controllers
                 return RedirectToAction("Create");
             }
 
+            await SalesDataService.DeleteDetailAsync(id, productId);
             return RedirectToAction("Detail", new { id });
         }
 
@@ -186,13 +301,63 @@ namespace SV22T1020065.Admin.Controllers
             return RedirectToAction("Create");
         }
 
+        private async Task<List<SelectListItem>> GetCustomerSelectListAsync()
+        {
+            var input = new PaginationSearchInput
+            {
+                Page = 1,
+                PageSize = 50,
+                SearchValue = ""
+            };
+            var customers = await PartnerDataService.ListCustomersAsync(input);
+            var list = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "0", Text = "-- Chọn khách hàng --" }
+            };
+
+            foreach (var customer in customers.DataItems)
+            {
+                list.Add(new SelectListItem
+                {
+                    Value = customer.CustomerID.ToString(),
+                    Text = customer.CustomerName
+                });
+            }
+
+            return list;
+        }
+
         /// <summary>
         /// Duyệt đơn hàng
         /// </summary>
         /// <param name="id">Mã đơn hàng</param>
+        [HttpGet]
         public async Task<IActionResult> Accept(int id)
         {
-            await SalesDataService.AcceptOrderAsync(id, 0);
+            var order = await SalesDataService.GetOrderAsync(id);
+            if (order == null)
+                return NotFound();
+
+            ViewBag.OrderId = id;
+            return View(order);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> OrderAccept(int id)
+        {
+            var userData = User.GetUserData();
+            if (userData == null || string.IsNullOrWhiteSpace(userData.UserId) || !int.TryParse(userData.UserId, out int employeeId))
+            {
+                TempData["Error"] = "Không thể xác định nhân viên hiện tại.";
+                return RedirectToAction("Detail", new { id });
+            }
+
+            var result = await SalesDataService.AcceptOrderAsync(id, employeeId);
+            Console.WriteLine($"AcceptOrderAsync result: {result}");
+            if (!result)
+            {
+                TempData["Error"] = "Không thể duyệt đơn hàng. Vui lòng kiểm tra trạng thái.";
+            }
             return RedirectToAction("Detail", new { id });
         }
 
@@ -202,7 +367,52 @@ namespace SV22T1020065.Admin.Controllers
         /// <param name="id">Mã đơn hàng</param>
         public async Task<IActionResult> Shipping(int id)
         {
-            await SalesDataService.ShipOrderAsync(id, 0);
+            var order = await SalesDataService.GetOrderAsync(id);
+            if (order == null)
+                return NotFound();
+
+            // Kiểm tra phải duyệt trước mới được ship
+            if (order.Status != OrderStatusEnum.Accepted)
+            {
+                TempData["Error"] = "Đơn hàng phải được duyệt trước khi chuyển giao.";
+                return RedirectToAction("Detail", new { id });
+            }
+
+            var input = new PaginationSearchInput
+            {
+                Page = 1,
+                PageSize = 50,
+                SearchValue = ""
+            };
+            var shippers = await PartnerDataService.ListShippersAsync(input);
+
+            ViewBag.OrderId = id;
+            ViewBag.Shippers = shippers.DataItems;
+            return View(order);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Shipping(int id, int shipperId)
+        {
+            if (shipperId <= 0)
+            {
+                ModelState.AddModelError("", "Vui lòng chọn người giao hàng.");
+                
+                var order = await SalesDataService.GetOrderAsync(id);
+                var input = new PaginationSearchInput 
+                { 
+                    Page = 1, 
+                    PageSize = 50, 
+                    SearchValue = "" 
+                };
+                var shippers = await PartnerDataService.ListShippersAsync(input);
+                
+                ViewBag.OrderId = id;
+                ViewBag.Shippers = shippers.DataItems;
+                return View(order);
+            }
+
+            await SalesDataService.ShipOrderAsync(id, shipperId);
             return RedirectToAction("Detail", new { id });
         }
 
@@ -211,6 +421,24 @@ namespace SV22T1020065.Admin.Controllers
         /// </summary>
         /// <param name="id">Mã đơn hàng</param>
         public async Task<IActionResult> Finish(int id)
+        {
+            var order = await SalesDataService.GetOrderAsync(id);
+            if (order == null)
+                return NotFound();
+
+            // Kiểm tra phải ship trước mới được finish
+            if (order.Status != OrderStatusEnum.Shipping)
+            {
+                TempData["Error"] = "Đơn hàng phải được chuyển giao trước khi hoàn thành.";
+                return RedirectToAction("Detail", new { id });
+            }
+
+            ViewBag.OrderId = id;
+            return View(order);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Finish(int id, IFormCollection form)
         {
             await SalesDataService.CompleteOrderAsync(id);
             return RedirectToAction("Detail", new { id });
@@ -222,7 +450,14 @@ namespace SV22T1020065.Admin.Controllers
         /// <param name="id">Mã đơn hàng</param>
         public async Task<IActionResult> Reject(int id)
         {
-            await SalesDataService.RejectOrderAsync(id, 0);
+            var userData = User.GetUserData();
+            if (userData == null || string.IsNullOrWhiteSpace(userData.UserId) || !int.TryParse(userData.UserId, out int employeeId))
+            {
+                TempData["Error"] = "Không thể xác định nhân viên hiện tại.";
+                return RedirectToAction("Detail", new { id });
+            }
+
+            await SalesDataService.RejectOrderAsync(id, employeeId);
             return RedirectToAction("Detail", new { id });
         }
 

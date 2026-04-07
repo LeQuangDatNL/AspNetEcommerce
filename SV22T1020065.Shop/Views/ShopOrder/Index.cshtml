@@ -1,0 +1,117 @@
+@model List<OrderDetailViewInfo>
+
+@{
+    ViewBag.Title = "Giỏ hàng";
+    decimal totalAmount = Model.Sum(x => x.TotalPrice);
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h4 class="mb-4">🛒 Giỏ hàng của bạn</h4>
+
+            @if (Model.Count == 0)
+            {
+                <div class="text-center py-5">
+                    <i class="fa fa-shopping-cart fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Giỏ hàng trống</h5>
+                    <p class="text-muted">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+                    <a href="~/ShopProduct" class="btn btn-primary">Tiếp tục mua sắm</a>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="80">Ảnh</th>
+                                        <th>Sản phẩm</th>
+                                        <th width="120" class="text-center">Đơn giá</th>
+                                        <th width="150" class="text-center">Số lượng</th>
+                                        <th width="120" class="text-center">Thành tiền</th>
+                                        <th width="100" class="text-center">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.Photo))
+                                                {
+                                                    <img src="~/images/products/@item.Photo" alt="@item.ProductName"
+                                                         class="img-thumbnail" style="width:60px; height:60px; object-fit:cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light d-flex align-items-center justify-content-center"
+                                                         style="width:60px; height:60px;">
+                                                        <i class="fa fa-image text-muted"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong>@item.ProductName</strong>
+                                                <br />
+                                                <small class="text-muted">@item.Unit</small>
+                                            </td>
+                                            <td class="text-center">@item.SalePrice.ToString("#,##0") ₫</td>
+                                            <td class="text-center">
+                                                <div class="input-group input-group-sm" style="width:120px;">
+                                                    <button class="btn btn-outline-secondary btn-sm" type="button"
+                                                            onclick="updateQuantity(@item.ProductID, @item.Quantity - 1)">-</button>
+                                                    <input type="number" class="form-control text-center" id="qty_@item.ProductID"
+                                                           value="@item.Quantity" min="1" onchange="updateQuantity(@item.ProductID, this.value)" />
+                                                    <button class="btn btn-outline-secondary btn-sm" type="button"
+                                                            onclick="updateQuantity(@item.ProductID, @item.Quantity + 1)">+</button>
+                                                </div>
+                                            </td>
+                                            <td class="text-center fw-bold">@item.TotalPrice.ToString("#,##0") ₫</td>
+                                            <td class="text-center">
+                                                <button class="btn btn-sm btn-outline-danger" onclick="removeItem(@item.ProductID)">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="4" class="text-end fw-bold">Tổng cộng:</td>
+                                        <td class="text-center fw-bold fs-5 text-primary">@totalAmount.ToString("#,##0") ₫</td>
+                                        <td></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mt-4">
+                            <div>
+                                <button class="btn btn-outline-danger" onclick="clearCart()">
+                                    <i class="fa fa-trash"></i> Xóa toàn bộ
+                                </button>
+                                <a href="~/ShopProduct" class="btn btn-outline-primary ms-2">
+                                    <i class="fa fa-shopping-bag"></i> Tiếp tục mua sắm
+                                </a>
+                            </div>
+                            <div>
+                                <a href="~/ShopOrder/Checkout" class="btn btn-success btn-lg">
+                                    <i class="fa fa-credit-card"></i> Thanh toán
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Các hàm updateQuantity, removeItem, clearCart đã được chuyển vào ShopSite.js
+    </script>
+}

@@ -1,0 +1,68 @@
+@model SV22T1020065.Models.Partner.Customer
+
+@{
+    ViewBag.Title = "Thông tin cá nhân";
+}
+
+<div class="container mt-4" style="max-width:700px;">
+    <div class="card shadow-sm p-3">
+        <h5 class="text-center text-primary mb-3">Thông tin cá nhân</h5>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger p-2 small">@TempData["Error"]</div>
+        }
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success p-2 small">@TempData["Success"]</div>
+        }
+
+        <form method="post" asp-controller="ShopAccount" asp-action="Profile">
+            <input asp-for="CustomerID" type="hidden" />
+            <input asp-for="IsLocked" type="hidden" />
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small">Tên khách hàng</label>
+                    <input asp-for="CustomerName" class="form-control form-control-sm" />
+                    <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small">Tên giao dịch</label>
+                    <input asp-for="ContactName" class="form-control form-control-sm" />
+                    <span asp-validation-for="ContactName" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small">Email</label>
+                <input asp-for="Email" type="email" class="form-control form-control-sm" />
+                <span asp-validation-for="Email" class="text-danger small"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small">Điện thoại</label>
+                    <input asp-for="Phone" class="form-control form-control-sm" />
+                    <span asp-validation-for="Phone" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label small">Tỉnh/Thành</label>
+                    <select asp-for="Province" asp-items="@ViewBag.Provinces" class="form-select form-select-sm"></select>
+                    <span asp-validation-for="Province" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small">Địa chỉ</label>
+                <input asp-for="Address" class="form-control form-control-sm" />
+                <span asp-validation-for="Address" class="text-danger small"></span>
+            </div>
+
+            <div class="d-grid">
+                <button class="btn btn-primary btn-sm">Lưu thông tin</button>
+            </div>
+        </form>
+    </div>
+</div>

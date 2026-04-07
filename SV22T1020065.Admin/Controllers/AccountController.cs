@@ -1,11 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-using SV22T1020065.DataLayers.MySQL;
+using SV22T1020065.BusinessLayers;
+using SV22T1020065.DataLayers.Repository;
 using SV22T1020065.Models.Security;
+using SV22T1020065.Shop.AppCodes;
 using System.Data;
 
 namespace SV22T1020065.Admin.Controllers
@@ -36,19 +39,12 @@ namespace SV22T1020065.Admin.Controllers
             if (!ModelState.IsValid)
                 return View();
 
-            string passswordHash = CryptHelper.HashMD5(Password);
+            string passwordHash = CryptHelper.HashMD5(Password);
+            Console.WriteLine(passwordHash);
             //TODU: Lấy thông tin tài khoản từ database
-            // UserAccount = await AccountDataService.AuthenticateAsync(UserName, passswordHash);
+            var UserAccount = await AccountDataService.LoginEmployeeAsync(UserName, passwordHash);
             //lưu tạm
-            var UserAccount = new UserAccount()
-            {
-                UserId = "1",
-                UserName = UserName,
-                DisplayName = "Nguyên Thị Thảo Mai",
-                Email = UserName,
-                Photo = "nophoto.png",
-                RoleNames = "${WebUserRoles.Administrator},{WebUserRoles.DataManager}"
-            };
+
             if (UserAccount == null)
             {
                 ModelState.AddModelError("", "Đăng nhập thất bại");
@@ -57,6 +53,8 @@ namespace SV22T1020065.Admin.Controllers
             // Thông tin người dùng để hợp lệ
 
             // Chuẩn bị thông tin người dùng để lưu vào cookie
+            Console.WriteLine(UserAccount.RoleNames);
+
             var userData = new WebUserData()
             {
                 UserId = UserAccount.UserId,
@@ -73,7 +71,6 @@ namespace SV22T1020065.Admin.Controllers
 
             return RedirectToAction("Index", "Home");
         }
-
         public async Task<IActionResult> Logout()
         {
             HttpContext.Session.Clear(); // Xóa session nếu có
@@ -92,6 +89,77 @@ namespace SV22T1020065.Admin.Controllers
         /// <returns></returns>
         public IActionResult ChangePassword()
         {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(string OldPassword, string NewPassword, string ConfirmPassword)
+        {
+            ViewBag.OldPassword = OldPassword;
+            ViewBag.NewPassword = NewPassword;
+            ViewBag.ConfirmPassword = ConfirmPassword;
+            if (string.IsNullOrWhiteSpace(OldPassword))
+            {
+                ViewBag.Error = "Mật khẩu cũ không được để trống";
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(NewPassword))
+            {
+                ViewBag.Error = "Mật khẩu mới không được để trống";
+                return View();
+            }
+
+            if (NewPassword.Length < 6)
+            {
+                ViewBag.Error = "Mật khẩu mới phải có ít nhất 6 ký tự";
+                return View();
+            }
+
+            if (string.IsNullOrWhiteSpace(ConfirmPassword))
+            {
+                ViewBag.Error = "Xác nhận mật khẩu mới không được để trống";
+                return View();
+            }
+
+            if (NewPassword != ConfirmPassword)
+            {
+                ViewBag.Error = "Mật khẩu xác nhận không đúng";
+                return View();
+            }
+
+            // 2. Lấy email từ cookie
+            var userData = User.GetUserData();
+            string email = userData?.Email ?? "";
+            Console.WriteLine(email);
+            if (string.IsNullOrEmpty(email))
+            {
+                ViewBag.Error = "Không xác định được tài khoản";
+                return View();
+            }
+
+            // 3. Kiểm tra mật khẩu cũ (hash trước khi so sánh)
+            string oldHash = CryptHelper.HashMD5(OldPassword);
+            var user = await AccountDataService.LoginEmployeeAsync(email, oldHash);
+            if (user == null)
+            {
+                ViewBag.Error = "Mật khẩu cũ không đúng";
+                return View();
+            }
+
+            // 4. Cập nhật mật khẩu mới
+            string newHash = CryptHelper.HashMD5(NewPassword);
+            bool result = await AccountDataService.ChangeEmployeePasswordAsync(email, newHash);
+            if (!result)
+            {
+                ViewBag.Error = "Đổi mật khẩu thất bại";
+                return View();
+            }
+
+            // 5. Thành công
+            ViewBag.OldPassword = null;
+            ViewBag.NewPassword = null;
+            ViewBag.ConfirmPassword = null;
+            ViewBag.Success = "Đổi mật khẩu thành công";
             return View();
         }
     }

@@ -1,5 +1,4 @@
-﻿@{
-}
+﻿@model Product
 @section PageToolBar {
     <button type="submit" form="formEdit" class="btn btn-primary">
         <i class="bi bi-save"></i>
@@ -23,12 +22,13 @@
             </div>
 
             <div class="card-body">
-                <form id="formEdit" method="post" enctype="multipart/form-data">
+                <form id="formEdit" method="post" enctype="multipart/form-data" asp-action="Edit" asp-controller="Product" asp-route-id="@Model.ProductID">
+                    <input asp-for="ProductID" type="hidden" />
 
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Tên mặt hàng</label>
                         <div class="col-sm-9">
-                            <input type="text"
+                            <input asp-for="ProductName"
                                    class="form-control"
                                    placeholder="Nhập tên mặt hàng" autofocus />
                         </div>
@@ -37,36 +37,26 @@
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Loại hàng</label>
                         <div class="col-sm-3">
-                            <select class="form-select">
-                                <option value="">-- Chọn loại hàng --</option>
-                                <option>Đồ uống</option>
-                                <option>Thực phẩm</option>
-                                <option>Văn phòng phẩm</option>
-                            </select>
+                            <select asp-for="CategoryID" class="form-select" asp-items="ViewBag.Categories"></select>
                         </div>
 
                         <label class="col-sm-2 col-form-label text-end">Nhà cung cấp</label>
                         <div class="col-sm-4">
-                            <select class="form-select">
-                                <option value="">-- Chọn nhà cung cấp --</option>
-                                <option>Công ty A</option>
-                                <option>Công ty B</option>
-                                <option>Công ty C</option>
-                            </select>
+                            <select asp-for="SupplierID" class="form-select" asp-items="ViewBag.Suppliers"></select>
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Đơn vị tính</label>
                         <div class="col-sm-3">
-                            <input type="text"
+                            <input asp-for="Unit"
                                    class="form-control"
                                    placeholder="cái, hộp, kg..." />
                         </div>
 
                         <label class="col-sm-2 col-form-label text-end">Giá</label>
                         <div class="col-sm-4">
-                            <input type="text"
+                            <input asp-for="Price"
                                    class="form-control money-input"
                                    placeholder="Giá bán"
                                    min="0" />
@@ -77,10 +67,7 @@
                         <label class="col-sm-3 col-form-label">Trạng thái</label>
                         <div class="col-sm-9">
                             <div class="form-check form-switch mt-2">
-                                <input class="form-check-input"
-                                       type="checkbox"
-                                       id="IsSelling"
-                                       checked />
+                                <input asp-for="IsSelling" class="form-check-input" type="checkbox" id="IsSelling" />
                                 <label class="form-check-label" for="IsSelling">
                                     Đang bán
                                 </label>
@@ -92,13 +79,16 @@
                         <label class="col-sm-3 col-form-label">Ảnh</label>
                         <div class="col-sm-9">
                             <input type="file"
+                                   name="Photo"
                                    class="form-control"
                                    accept="image/*"
                                    data-img-preview="imgPreview"
                                    onchange="previewImage(this)" />
                             <div class="mt-2">
                                 <img id="imgPreview"
-                                     src="~/images/products/nophoto.png"
+                                     src="@(string.IsNullOrEmpty(Model.Photo)
+                                                ? Url.Content("~/images/products/nophoto.png")
+                                                : Url.Content($"~/images/products/{Model.Photo}"))"
                                      class="img-thumbnail"
                                      style="max-height: 160px;" />
                             </div>
@@ -108,12 +98,12 @@
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Mô tả</label>
                         <div class="col-sm-9">
-                            <textarea class="form-control"
+                            <textarea asp-for="ProductDescription"
+                                      class="form-control"
                                       rows="3"
                                       placeholder="Nhập mô tả mặt hàng"></textarea>
                         </div>
                     </div>
-
                 </form>
             </div>
         </div>
@@ -121,8 +111,9 @@
 </div>
 
 @{
-    //if (Model.ProductId > 0) {
-    await Html.RenderPartialAsync("ListPhotos");
-    await Html.RenderPartialAsync("ListAttributes");
-    // }
+    var photos = ViewBag.Photos as List<SV22T1020065.Models.Catalog.ProductPhoto> ?? new List<SV22T1020065.Models.Catalog.ProductPhoto>();
+    var attributes = ViewBag.Attributes as List<SV22T1020065.Models.Catalog.ProductAttribute> ?? new List<SV22T1020065.Models.Catalog.ProductAttribute>();
 }
+
+@await Html.PartialAsync("ListPhotos", photos)
+@await Html.PartialAsync("ListAttributes", attributes)

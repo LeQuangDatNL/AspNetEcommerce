@@ -1,0 +1,176 @@
+@* @model SV22T1020065.Models.Sales.Order
+
+@{
+    ViewBag.Title = "Chi tiết đơn hàng";
+    var orderDetails = ViewBag.OrderDetails as List<SV22T1020065.Models.Sales.OrderDetailViewInfo>;
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="~/ShopOrder/History">Lịch sử đơn hàng</a></li>
+                    <li class="breadcrumb-item active">Đơn hàng #@Model.OrderID</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fa fa-receipt"></i> Chi tiết đơn hàng #@Model.OrderID</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Thông tin đơn hàng</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td width="120"><strong>Mã đơn hàng:</strong></td>
+                                    <td>#@Model.OrderID</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ngày đặt:</strong></td>
+                                    <td>@Model.OrderTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        @switch (Model.Status)
+                                        {
+                                            case "INIT":
+                                                <span class="badge bg-warning">Chờ xử lý</span>
+                                                break;
+                                            case "ACCEPTED":
+                                                <span class="badge bg-info">Đã xác nhận</span>
+                                                break;
+                                            case "SHIPPING":
+                                                <span class="badge bg-primary">Đang giao</span>
+                                                break;
+                                            case "FINISHED":
+                                                <span class="badge bg-success">Hoàn thành</span>
+                                                break;
+                                            case "CANCEL":
+                                                <span class="badge bg-danger">Đã hủy</span>
+                                                break;
+                                            case "REJECTED":
+                                                <span class="badge bg-secondary">Từ chối</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-light text-dark">@Model.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tổng tiền:</strong></td>
+                                    <td class="fw-bold text-success fs-5">@Model.Total.ToString("#,##0") ₫</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Thông tin giao hàng</h6>
+                            <table class="table table-sm">
+                                <tr>
+                                    <td width="120"><strong>Người nhận:</strong></td>
+                                    <td>@Model.CustomerName</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tên liên hệ:</strong></td>
+                                    <td>@Model.ContactName</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Địa chỉ:</strong></td>
+                                    <td>@Model.Address</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tỉnh/Thành:</strong></td>
+                                    <td>@Model.Province</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Số điện thoại:</strong></td>
+                                    <td>@Model.Phone</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Email:</strong></td>
+                                    <td>@Model.Email</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fa fa-shopping-cart"></i> Chi tiết sản phẩm</h5>
+                </div>
+                <div class="card-body">
+                    @if (orderDetails != null && orderDetails.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th width="80">Ảnh</th>
+                                        <th>Sản phẩm</th>
+                                        <th width="120" class="text-center">Đơn giá</th>
+                                        <th width="100" class="text-center">Số lượng</th>
+                                        <th width="120" class="text-center">Thành tiền</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in orderDetails)
+                                    {
+                                        <tr>
+                                            <td>
+                                                @if (!string.IsNullOrEmpty(item.Photo))
+                                                {
+                                                    <img src="~/images/products/@item.Photo" alt="@item.ProductName"
+                                                         class="img-thumbnail" style="width:60px; height:60px; object-fit:cover;" />
+                                                }
+                                                else
+                                                {
+                                                    <div class="bg-light d-flex align-items-center justify-content-center"
+                                                         style="width:60px; height:60px;">
+                                                        <i class="fa fa-image text-muted"></i>
+                                                    </div>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong>@item.ProductName</strong>
+                                                <br />
+                                                <small class="text-muted">@item.Unit</small>
+                                            </td>
+                                            <td class="text-center">@item.SalePrice.ToString("#,##0") ₫</td>
+                                            <td class="text-center">@item.Quantity</td>
+                                            <td class="text-center fw-bold">@item.TotalPrice.ToString("#,##0") ₫</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <td colspan="4" class="text-end fw-bold">Tổng cộng:</td>
+                                        <td class="text-center fw-bold fs-5 text-primary">@Model.Total.ToString("#,##0") ₫</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-center text-muted">Không có thông tin chi tiết sản phẩm</p>
+                    }
+                </div>
+            </div>
+
+            <div class="mt-3 text-center">
+                <a href="~/ShopOrder/History" class="btn btn-outline-secondary">
+                    <i class="fa fa-arrow-left"></i> Quay lại lịch sử đơn hàng
+                </a>
+                <a href="~/ShopProduct" class="btn btn-primary ms-2">
+                    <i class="fa fa-shopping-bag"></i> Tiếp tục mua sắm
+                </a>
+            </div>
+        </div>
+    </div>
+</div> *@

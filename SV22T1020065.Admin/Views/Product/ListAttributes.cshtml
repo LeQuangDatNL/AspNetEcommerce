@@ -1,5 +1,7 @@
-﻿@{
+﻿@model List<SV22T1020065.Models.Catalog.ProductAttribute>
+@{
     Layout = null;
+    var productId = ViewBag.ProductId ?? 0;
 }
 <div class="row justify-content-center">
     <div class="col-12">
@@ -13,7 +15,7 @@
                         </h6>
                     </div>
                     <div class="col text-end">
-                        <a class="btn btn-sm btn-primary" href="~/Product/CreateAttribute/123">
+                        <a class="btn btn-sm btn-primary" href="@Url.Action("CreateAttribute", "Product", new { id = productId })">
                             <i class="bi bi-plus"></i>
                             Thêm thuộc tính
                         </a>
@@ -32,19 +34,30 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for (int i = 1; i <= 10; i++)
+                        @if (Model.Any())
+                        {
+                            foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.AttributeName</td>
+                                    <td>@item.AttributeValue</td>
+                                    <td class="text-center">@item.DisplayOrder</td>
+                                    <td class="text-center text-nowrap">
+                                        <a class="btn btn-sm btn-primary" href="@Url.Action("EditAttribute", "Product", new { id = productId, attributeId = item.AttributeID })">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a class="btn btn-sm btn-danger" href="@Url.Action("DeleteAttribute", "Product", new { id = productId, attributeId = item.AttributeID })">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
                         {
                             <tr>
-                                <td>Màu sắc</td>
-                                <td>Đỏ</td>
-                                <td class="text-center">@i</td>
-                                <td class="text-center text-nowrap">
-                                    <a class="btn btn-sm btn-primary" href="~/Product/EditAttribute/123?attributeId=456">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a class="btn btn-sm btn-danger" href="~/Product/DeleteAttribute/123?attributeId=456">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
+                                <td colspan="4" class="text-center text-muted">
+                                    Chưa có thuộc tính nào.
                                 </td>
                             </tr>
                         }

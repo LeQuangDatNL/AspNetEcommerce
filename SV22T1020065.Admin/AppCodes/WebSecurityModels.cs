@@ -97,7 +97,11 @@ namespace SV22T1020065.Admin
                 userData.Roles = new List<string>();
                 foreach (var claim in principal.FindAll(ClaimTypes.Role))
                 {
-                    userData.Roles.Add(claim.Value);
+                    var role = claim.Value?.Trim();
+                    if (!string.IsNullOrEmpty(role))
+                    {
+                        userData.Roles.Add(role);
+                    }
                 }
 
                 return userData;

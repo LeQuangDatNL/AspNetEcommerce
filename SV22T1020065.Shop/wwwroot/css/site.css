@@ -23,3 +23,20 @@
 .page-item .page-link {
     border-radius: 0;
 }
+/* Login and reg*/
+body {
+    min-height: 100vh;
+}
+
+.center-body {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+}
+
+.auth-box {
+    width: 320px; 
+    border-radius: 12px;
+}

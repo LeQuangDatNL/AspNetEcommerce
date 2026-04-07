@@ -1,0 +1,162 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model List<OrderDetailViewInfo>
+
+@{
+    ViewBag.Title = "Thanh toán";
+    var cart = Model ?? new List<OrderDetailViewInfo>();
+    var customer = ViewBag.Customer as Customer;
+    var provinces = ViewBag.Provinces as List<SelectListItem> ?? new List<SelectListItem>();
+    decimal totalAmount = cart.Sum(x => x.TotalPrice);
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fa fa-map-marker"></i> Thông tin giao hàng</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(ViewBag.Error as string))
+                    {
+                        <div class="alert alert-danger">@ViewBag.Error</div>
+                    }
+                    <form id="checkoutForm" method="post" action="~/ShopOrder/Checkout">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="CustomerName" class="form-label">Họ tên <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="CustomerName" name="CustomerName"
+                                       value="@customer?.CustomerName" required maxlength="100" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ContactName" class="form-label">Tên liên hệ</label>
+                                <input type="text" class="form-control" id="ContactName" name="ContactName"
+                                       value="@customer?.ContactName" maxlength="100" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Province" class="form-label">Tỉnh/Thành phố <span class="text-danger">*</span></label>
+                                <select class="form-select" id="Province" name="Province" required>
+                                    <option value="">-- Chọn tỉnh/thành phố --</option>
+                                    @foreach (var province in provinces)
+                                    {
+                                        if (province.Value == customer?.Province)
+                                        {
+                                            <option value="@province.Value" selected>@province.Text</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@province.Value">@province.Text</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Address" class="form-label">Địa chỉ <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="Address" name="Address"
+                                       value="@customer?.Address" required maxlength="250" />
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="Phone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="Phone" name="Phone"
+                                       value="@customer?.Phone" required maxlength="12" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="Email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="Email" name="Email"
+                                       value="@customer?.Email" maxlength="100" />
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fa fa-shopping-cart"></i> Đơn hàng của bạn</h5>
+                </div>
+                <div class="card-body">
+                    @if (cart.Any())
+                    {
+                        <div class="mb-3">
+                            @foreach (var item in cart)
+                            {
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="grow">
+                                        <strong class="text-truncate" style="max-width: 200px;" title="@item.ProductName">
+                                            @item.ProductName
+                                        </strong>
+                                        <br />
+                                        <small class="text-muted">@item.Quantity x @item.SalePrice.ToString("#,##0") ₫</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <strong>@item.TotalPrice.ToString("#,##0") ₫</strong>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between align-items-center">
+                            <strong>Tổng cộng:</strong>
+                            <strong class="text-success fs-5">@totalAmount.ToString("#,##0") ₫</strong>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-center text-muted">Giỏ hàng trống</p>
+                    }
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <button type="submit" form="checkoutForm" class="btn btn-success btn-lg w-100"
+                            @(cart == null || !cart.Any() ? "disabled" : "")>
+                        <i class="fa fa-credit-card"></i> Đặt hàng
+                    </button>
+                    <a href="~/ShopOrder" class="btn btn-outline-secondary w-100 mt-2">
+                        <i class="fa fa-arrow-left"></i> Quay lại giỏ hàng
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#checkoutForm').on('submit', function(e) {
+                e.preventDefault();
+
+                if (confirm('Bạn có chắc muốn đặt hàng với thông tin này?')) {
+                    var submitButton = $(this).find('button[type="submit"]');
+                    submitButton.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...');
+
+                    $.post($(this).attr('action'), $(this).serialize())
+                        .done(function(response) {
+                            if (response.success) {
+                                window.location.href = '/ShopOrder/OrderSuccess?orderId=' + response.orderId;
+                            } else if (response.redirectUrl) {
+                                window.location.href = response.redirectUrl;
+                            } else {
+                                alert(response.message || 'Có lỗi xảy ra, vui lòng thử lại');
+                                submitButton.prop('disabled', false).html('<i class="fa fa-credit-card"></i> Đặt hàng');
+                            }
+                        })
+                        .fail(function() {
+                            alert('Có lỗi xảy ra, vui lòng thử lại');
+                            submitButton.prop('disabled', false).html('<i class="fa fa-credit-card"></i> Đặt hàng');
+                        });
+                }
+            });
+        });
+    </script>
+}

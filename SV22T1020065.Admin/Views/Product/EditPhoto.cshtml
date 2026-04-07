@@ -1,4 +1,6 @@
-﻿@{
+﻿@model SV22T1020065.Models.Catalog.ProductPhoto
+@{
+    var productId = ViewBag.ProductId ?? 0;
 }
 @section PageToolBar {
     <button type="submit" form="formEdit" class="btn btn-primary">
@@ -6,7 +8,7 @@
         Lưu ảnh
     </button>
 
-    <a href="~/Product/Edit/123#photos" class="btn btn-secondary ms-1">
+    <a href="@Url.Action("Edit", "Product", new { id = productId })#photos" class="btn btn-secondary ms-1">
         <i class="bi bi-arrow-left"></i>
         Quay lại
     </a>
@@ -19,7 +21,9 @@
             </div>
 
             <div class="card-body">
-                <form id="formEdit" method="post" enctype="multipart/form-data">
+                <form id="formEdit" method="post" enctype="multipart/form-data" asp-action="EditPhoto" asp-controller="Product" asp-route-id="@productId" asp-route-photoId="@Model.PhotoID">
+                    <input asp-for="PhotoID" type="hidden" />
+                    <input type="hidden" name="ProductID" value="@productId" />
 
                     <div class="row mb-3 align-items-center">
                         <label class="col-sm-3 fw-semibold">Ảnh</label>
@@ -37,7 +41,9 @@
                         <label class="col-sm-3 fw-semibold">Xem trước</label>
                         <div class="col-sm-9">
                             <img id="imgPreview"
-                                 src="~/images/products/nophoto.png"
+                                 src="@(string.IsNullOrEmpty(Model.Photo)
+                                            ? Url.Content("~/images/products/nophoto.png")
+                                            : Url.Content($"~/images/products/{Model.Photo}"))"
                                  class="img-thumbnail"
                                  style="max-height:200px;" />
                         </div>
@@ -46,18 +52,16 @@
                     <div class="row mb-3">
                         <label class="col-sm-3 fw-semibold">Mô tả</label>
                         <div class="col-sm-9">
-                            <input type="text" name="Description"
-                                      class="form-control" />
+                            <input asp-for="Description"
+                                   class="form-control" />
                         </div>
                     </div>
 
                     <div class="row mb-3">
                         <label class="col-sm-3 fw-semibold">Thứ tự hiển thị</label>
                         <div class="col-sm-3">
-                            <input type="number"
-                                   name="DisplayOrder"
+                            <input asp-for="DisplayOrder"
                                    class="form-control"
-                                   value="1"
                                    min="1" />
                         </div>
                     </div>
@@ -66,9 +70,9 @@
                         <label class="col-sm-3 fw-semibold">Trạng thái</label>
                         <div class="col-sm-9">
                             <div class="form-check">
-                                <input class="form-check-input"
+                                <input asp-for="IsHidden"
+                                       class="form-check-input"
                                        type="checkbox"
-                                       name="IsHidden"
                                        id="IsHidden" />
                                 <label class="form-check-label" for="IsHidden">
                                     Ẩn ảnh

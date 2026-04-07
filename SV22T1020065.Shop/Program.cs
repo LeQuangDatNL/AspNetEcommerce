@@ -1,48 +1,75 @@
-﻿using SV22T1020065.BusinessLayers;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using SV22T1020065.Shop;
+using SV22T1020065.Shop.AppCodes;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllersWithViews()
-    .AddMvcOptions(option => option.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
+                .AddMvcOptions(option =>
+                {
+                    option.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
+                });
 
-// Cấu hình Session (Cần thiết cho Giỏ hàng)
-builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options =>
+// Configure Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(option =>
+                {
+                    option.Cookie.Name = "LiteCommerce.Shop";
+                    option.LoginPath = "/ShopAccount/Login";
+                    option.AccessDeniedPath = "/ShopAccount/AccessDenied";
+                    option.ExpireTimeSpan = TimeSpan.FromDays(7);
+                    option.SlidingExpiration = true;
+                    option.Cookie.HttpOnly = true;
+                    option.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                });
+
+// Configure Session
+builder.Services.AddSession(option =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    option.IdleTimeout = TimeSpan.FromHours(2);
+    option.Cookie.HttpOnly = true;
+    option.Cookie.IsEssential = true;
 });
 
 var app = builder.Build();
-
-// Khởi tạo cấu hình cho BusinessLayer (Lấy chuỗi kết nối từ appsettings.json)
-// Lấy chuỗi kết nối từ mục DefaultConnection trong appsettings.json
-string connectionString = builder.Configuration.GetConnectionString("LiteCommerceDB")
-    ?? throw new InvalidOperationException("ConnectionString 'LiteCommerceDB' not found.");
-
-// Initialize Business Layer Configuration
-SV22T1020065.BusinessLayers.Configuration.Initialize(connectionString);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
 }
-
-app.UseHttpsRedirection();
 app.UseStaticFiles();
-
 app.UseRouting();
-
-app.UseSession(); // Kích hoạt sử dụng Session cho Giỏ hàng
-
+app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
 
+//Configure Routing
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=ShopHome}/{action=Index}/{id?}");
+
+//Configure default format
+var cultureInfo = new CultureInfo("vi-VN");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
+//cấu hình ApplicationContext để có thể truy cập HttpContext, WebHostEnvironment và Configuration từ Business Layer
+ApplicationContext.Configure
+(
+    httpContextAccessor: app.Services.GetRequiredService<IHttpContextAccessor>(),
+    webHostEnvironment: app.Services.GetRequiredService<IWebHostEnvironment>(),
+    configuration: app.Configuration
+);
+
+//Kết nối đến database (Lấy chuỗi kết nối từ appsettings.json)
+string connectionString = builder.Configuration.GetConnectionString("LiteCommerceDB")
+    ?? throw new InvalidOperationException("ConnectionString 'LiteCommerceDB' not found.");
+
+// Initialize Business Layer Configuration
+SV22T1020065.BusinessLayers.Configuration.Initialize(connectionString);
 
 app.Run();

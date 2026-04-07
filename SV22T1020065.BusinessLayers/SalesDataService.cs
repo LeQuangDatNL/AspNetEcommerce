@@ -1,7 +1,9 @@
 ﻿using SV22T1020065.DataLayers.Interfaces;
-using SV22T1020065.DataLayers.SQLServer;
+using SV22T1020065.DataLayers.Repository;
+using SV22T1020065.DataLayers;
 using SV22T1020065.Models.Common;
 using SV22T1020065.Models.Sales;
+using SV22T1020065.Models.Models.Sales;
 
 namespace SV22T1020065.BusinessLayers
 {
@@ -30,7 +32,15 @@ namespace SV22T1020065.BusinessLayers
         {
             return await orderDB.ListAsync(input);
         }
-
+        /// <summary>
+        /// Tìm kiếm bên người dùng dưới dạng phân trang
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static async Task<PagedResult<OrderViewInfo>> ListOrdersUserAsync(OrderUserInput input)
+        {
+            return await orderDB.ListOrdersByUserAsync(input);
+        }
         /// <summary>
         /// Lấy thông tin chi tiết của một đơn hàng
         /// </summary>
