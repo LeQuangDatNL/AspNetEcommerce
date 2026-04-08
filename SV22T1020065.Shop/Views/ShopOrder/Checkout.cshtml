@@ -132,29 +132,13 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            $('#checkoutForm').on('submit', function(e) {
-                e.preventDefault();
+        document.addEventListener("DOMContentLoaded", function () {
+            var checkoutForm = document.getElementById('checkoutForm');
+            if (!checkoutForm) return;
 
-                if (confirm('Bạn có chắc muốn đặt hàng với thông tin này?')) {
-                    var submitButton = $(this).find('button[type="submit"]');
-                    submitButton.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Đang xử lý...');
-
-                    $.post($(this).attr('action'), $(this).serialize())
-                        .done(function(response) {
-                            if (response.success) {
-                                window.location.href = '/ShopOrder/OrderSuccess?orderId=' + response.orderId;
-                            } else if (response.redirectUrl) {
-                                window.location.href = response.redirectUrl;
-                            } else {
-                                alert(response.message || 'Có lỗi xảy ra, vui lòng thử lại');
-                                submitButton.prop('disabled', false).html('<i class="fa fa-credit-card"></i> Đặt hàng');
-                            }
-                        })
-                        .fail(function() {
-                            alert('Có lỗi xảy ra, vui lòng thử lại');
-                            submitButton.prop('disabled', false).html('<i class="fa fa-credit-card"></i> Đặt hàng');
-                        });
+            checkoutForm.addEventListener('submit', function (e) {
+                if (!confirm('Bạn có chắc muốn đặt hàng với thông tin này?')) {
+                    e.preventDefault();
                 }
             });
         });

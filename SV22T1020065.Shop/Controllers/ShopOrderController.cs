@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SV22T1020065.BusinessLayers;
+using SV22T1020065.Models.Common;
 using SV22T1020065.Models.Models.Sales;
 using SV22T1020065.Models.Partner;
 using SV22T1020065.Models.Sales;
@@ -148,16 +149,20 @@ namespace SV22T1020065.Shop.Controllers
         {
             var customerId = GetCurrentCustomerId();
             if (!customerId.HasValue)
-                return Json(new { success = false, redirectUrl = Url.Action("Login", "ShopAccount") });
+                return RedirectToAction("Login", "ShopAccount");
 
             var cart = ShoppingCartService.GetShoppingCart();
             if (cart.Count == 0)
-                return Json(new { success = false, redirectUrl = Url.Action("Index") });
+                return RedirectToAction("Index");
 
             // Validate thông tin giao hàng
             if (string.IsNullOrWhiteSpace(Province) || string.IsNullOrWhiteSpace(Address))
             {
-                return Json(new { success = false, message = "Vui lòng nhập đầy đủ thông tin giao hàng" });
+                ViewBag.Error = "Vui lòng nhập đầy đủ thông tin giao hàng";
+                var customer = await GetCurrentCustomerAsync();
+                ViewBag.Customer = customer;
+                ViewBag.Provinces = await SelectListHelper.Provinces();
+                return View(cart);
             }
 
             // Tạo đơn hàng
@@ -171,7 +176,11 @@ namespace SV22T1020065.Shop.Controllers
             int orderId = await SalesDataService.AddOrderAsync(order);
             if (orderId <= 0)
             {
-                return Json(new { success = false, message = "Không thể tạo đơn hàng, vui lòng thử lại" });
+                ViewBag.Error = "Không thể tạo đơn hàng, vui lòng thử lại";
+                var customer = await GetCurrentCustomerAsync();
+                ViewBag.Customer = customer;
+                ViewBag.Provinces = await SelectListHelper.Provinces();
+                return View(cart);
             }
 
             // Thêm chi tiết đơn hàng
@@ -188,14 +197,18 @@ namespace SV22T1020065.Shop.Controllers
                 bool result = await SalesDataService.AddDetailAsync(detail);
                 if (!result)
                 {
-                    return Json(new { success = false, message = "Có lỗi khi lưu chi tiết đơn hàng" });
+                    ViewBag.Error = "Có lỗi khi lưu chi tiết đơn hàng";
+                    var customer = await GetCurrentCustomerAsync();
+                    ViewBag.Customer = customer;
+                    ViewBag.Provinces = await SelectListHelper.Provinces();
+                    return View(cart);
                 }
             }
 
             // Xóa giỏ hàng sau khi đặt hàng thành công
             ShoppingCartService.ClearCart();
 
-            return View("History");
+            return RedirectToAction("OrderSuccess", new { orderId });
         }
 
         /// <summary>
@@ -230,7 +243,7 @@ namespace SV22T1020065.Shop.Controllers
             };
 
             var result = await SalesDataService.ListOrdersUserAsync(input);
-            return View(result);
+            return View(result ?? new PagedResult<OrderViewInfo>());
         }
 
         /// <summary>

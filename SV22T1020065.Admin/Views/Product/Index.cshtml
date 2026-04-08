@@ -38,12 +38,12 @@
                 <div class="col-md-3">
                     <label class="form-label">Khoảng giá</label>
                     <div class="input-group">
-                        <input type="text"
+                        <input type="number"
                                name="MinPrice"
                                class="form-control money-input"
                                placeholder="Từ" />
                         <span class="input-group-text">-</span>
-                        <input type="text"
+                        <input type="number"
                                name="MaxPrice"
                                class="form-control money-input"
                                placeholder="Đến" />
@@ -69,6 +69,14 @@
         </form>
     </div>
 </div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
 <div id="searchResult"></div>
 

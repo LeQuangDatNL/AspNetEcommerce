@@ -65,5 +65,25 @@ namespace SV22T1020065.BusinessLayers
         }
 
         #endregion
+
+        #region ROLES
+
+        /// <summary>
+        /// Lấy danh sách quyền của nhân viên
+        /// </summary>
+        public static async Task<List<string>> GetEmployeeRolesAsync(string userName)
+        {
+            return await employeeDB.GetRolesAsync(userName);
+        }
+
+        /// <summary>
+        /// Cập nhật quyền cho nhân viên
+        /// </summary>
+        public static async Task<bool> UpdateEmployeeRolesAsync(string userName, List<string> roles)
+        {
+            return await employeeDB.UpdateRolesAsync(userName, roles);
+        }
+
+        #endregion
     }
 }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace SV22T1020065.Admin.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = WebUserRoles.Administrator + "," + WebUserRoles.DataManager + "," + WebUserRoles.Employee)]
     public class CategoryController : Controller
     {
         private int PAGESIZE = ApplicationContext.PAGE_SIZE;

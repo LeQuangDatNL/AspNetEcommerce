@@ -16,28 +16,43 @@
 }
 
 @section PageToolBar {
-    <div class="btn-group">
-        <button type="button"
-                class="btn btn-primary dropdown-toggle"
-                data-bs-toggle="dropdown">
-            <i class="bi bi-gear me-1"></i>
-            Xử lý đơn hàng
-        </button>
-        <ul class="dropdown-menu">
-            <li><a class="dropdown-item" href="@Url.Content("~/Order/Accept/" + Model.Order.OrderID)">Duyệt đơn hàng</a></li>
-            <li><a class="dropdown-item" href="@Url.Content("~/Order/Shipping/" + Model.Order.OrderID)">Chuyển giao hàng</a></li>
-            <li><a class="dropdown-item" href="@Url.Content("~/Order/Finish/" + Model.Order.OrderID)">Hoàn tất đơn hàng</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="@Url.Content("~/Order/Cancel/" + Model.Order.OrderID)">Hủy đơn hàng</a></li>
-            <li><a class="dropdown-item text-danger" href="@Url.Content("~/Order/Reject/" + Model.Order.OrderID)">Từ chối đơn hàng</a></li>
-        </ul>
-    </div>
+    @if (Model.Order.Status == OrderStatusEnum.New || Model.Order.Status == OrderStatusEnum.Accepted || Model.Order.Status == OrderStatusEnum.Shipping)
+    {
+        <div class="btn-group">
+            <button type="button"
+                    class="btn btn-primary dropdown-toggle"
+                    data-bs-toggle="dropdown">
+                <i class="bi bi-gear me-1"></i>
+                Xử lý đơn hàng
+            </button>
+            <ul class="dropdown-menu">
+                @if (Model.Order.Status == OrderStatusEnum.New)
+                {
+                    <li><a class="dropdown-item" href="@Url.Content("~/Order/Accept/" + Model.Order.OrderID)">Duyệt đơn hàng</a></li>
+                    <li><a class="dropdown-item text-danger" href="@Url.Content("~/Order/Reject/" + Model.Order.OrderID)">Từ chối đơn hàng</a></li>
+                    <li><a class="dropdown-item text-danger" href="@Url.Content("~/Order/Cancel/" + Model.Order.OrderID)">Hủy đơn hàng</a></li>
+                }
+                @if (Model.Order.Status == OrderStatusEnum.Accepted)
+                {
+                    <li><a class="dropdown-item" href="@Url.Content("~/Order/Shipping/" + Model.Order.OrderID)">Chuyển giao hàng</a></li>
+                    <li><a class="dropdown-item text-danger" href="@Url.Content("~/Order/Cancel/" + Model.Order.OrderID)">Hủy đơn hàng</a></li>
+                }
+                @if (Model.Order.Status == OrderStatusEnum.Shipping)
+                {
+                    <li><a class="dropdown-item" href="@Url.Content("~/Order/Finish/" + Model.Order.OrderID)">Hoàn tất đơn hàng</a></li>
+                }
+            </ul>
+        </div>
+    }
 
-    <a href="@Url.Content("~/Order/Delete/" + Model.Order.OrderID)"
-       class="btn btn-danger ms-1">
-        <i class="bi bi-trash"></i>
-        Xóa
-    </a>
+    @if (Model.Order.Status == OrderStatusEnum.Completed || Model.Order.Status == OrderStatusEnum.Cancelled || Model.Order.Status == OrderStatusEnum.Rejected)
+    {
+        <a href="@Url.Content("~/Order/Delete/" + Model.Order.OrderID)"
+           class="btn btn-danger ms-1">
+            <i class="bi bi-trash"></i>
+            Xóa
+        </a>
+    }
 
     <a href="~/Order" class="btn btn-secondary ms-1">
         <i class="bi bi-arrow-left"></i>
@@ -152,10 +167,3 @@
 
 @await Html.PartialAsync("ShowCart", Model.Details)
 
-@section Styles {
-    <style>
-        .card-body .row {
-            border-bottom: 1px dotted #646464;
-        }
-    </style>
-}

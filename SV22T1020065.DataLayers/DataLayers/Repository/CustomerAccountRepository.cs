@@ -47,6 +47,19 @@ public class CustomerAccountRepository : IUserAccountRepository
         }
 
     }
+
+    public async Task<List<string>> GetRolesAsync(string userName)
+    {
+        // Customers may not have roles, return empty list
+        return await Task.FromResult(new List<string>());
+    }
+
+    public async Task<bool> UpdateRolesAsync(string userName, List<string> roles)
+    {
+        // Customers may not have roles, do nothing
+        return await Task.FromResult(true);
+    }
+
         public async Task<int> RegisterAsync(AccountCustomer data)
         {
             using var connection = new SqlConnection(_connectionString);

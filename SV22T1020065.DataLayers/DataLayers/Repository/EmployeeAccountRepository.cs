@@ -47,4 +47,33 @@ public class EmployeeAccountRepository : IUserAccountRepository
             return result > 0;
         }
     }
+
+    public async Task<List<string>> GetRolesAsync(string userName)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            string sql = @"SELECT RoleNames FROM Employees WHERE Email = @userName";
+
+            string? roleNames = await connection.QueryFirstOrDefaultAsync<string>(sql, new { userName });
+
+            if (string.IsNullOrEmpty(roleNames))
+                return new List<string>();
+
+            return roleNames.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+        }
+    }
+
+    public async Task<bool> UpdateRolesAsync(string userName, List<string> roles)
+    {
+        using (var connection = new SqlConnection(_connectionString))
+        {
+            string roleNames = string.Join(",", roles);
+
+            string sql = @"UPDATE Employees SET RoleNames = @roleNames WHERE Email = @userName";
+
+            int result = await connection.ExecuteAsync(sql, new { userName, roleNames });
+
+            return result > 0;
+        }
+    }
 }

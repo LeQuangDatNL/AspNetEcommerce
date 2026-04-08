@@ -21,15 +21,18 @@ public class OrderRepository : IOrderRepository
         using var connection = new SqlConnection(_connectionString);
         var result = new PagedResult<OrderViewInfo>();
 
-        var searchText = string.IsNullOrWhiteSpace(input.SearchValue) ? "" : input.SearchValue;
+        var searchText = string.IsNullOrWhiteSpace(input.CustomerName) ? "" : input.CustomerName;
 
         // 🔹 COUNT
         string sqlCount = @"SELECT COUNT(*)
-                                FROM v_OrderList
-                                WHERE (@Status = 0 OR Status = @Status)
-                                  AND (@FromTime IS NULL OR OrderDate >= @FromTime)
-                                  AND (@ToTime IS NULL OR OrderDate <= @ToTime)
-                                  AND (CustomerName LIKE @Search OR CustomerPhone LIKE @Search)"; // ✅ FIX
+                                FROM dbo.Orders AS o
+                                LEFT JOIN dbo.Customers AS c ON o.CustomerID = c.CustomerID
+                                LEFT JOIN dbo.Employees AS e ON o.EmployeeID = e.EmployeeID
+                                LEFT JOIN dbo.Shippers AS sh ON o.ShipperID = sh.ShipperID
+                                WHERE (@Status = 0 OR o.Status = @Status)
+                                  AND (@FromTime IS NULL OR o.OrderTime >= @FromTime)
+                                  AND (@ToTime IS NULL OR o.OrderTime <= @ToTime)
+                                  AND (c.CustomerName LIKE @Search OR c.Phone LIKE @Search)";
 
         result.RowCount = await connection.ExecuteScalarAsync<int>(sqlCount, new
         {
@@ -40,13 +43,40 @@ public class OrderRepository : IOrderRepository
         });
 
         // 🔹 DATA
-        string sqlData = @"SELECT *, OrderDate AS OrderTime
-                               FROM v_OrderList
-                               WHERE (@Status = 0 OR Status = @Status)
-                                 AND (@FromTime IS NULL OR OrderDate >= @FromTime)
-                                 AND (@ToTime IS NULL OR OrderDate <= @ToTime)
-                                 AND (CustomerName LIKE @Search OR CustomerPhone LIKE @Search)
-                               ORDER BY OrderID DESC
+        string sqlData = @"SELECT o.OrderID,
+                                  o.CustomerID,
+                                  o.OrderTime AS OrderTime,
+                                  o.DeliveryProvince,
+                                  o.DeliveryAddress,
+                                  o.EmployeeID,
+                                  o.AcceptTime,
+                                  o.ShipperID,
+                                  o.ShippedTime,
+                                  o.FinishedTime,
+                                  o.Status,
+                                  c.CustomerName,
+                                  c.ContactName AS CustomerContactName,
+                                  c.Email AS CustomerEmail,
+                                  c.Phone AS CustomerPhone,
+                                  c.Address AS CustomerAddress,
+                                  e.FullName AS EmployeeName,
+                                  sh.ShipperName,
+                                  sh.Phone AS ShipperPhone,
+                                  COALESCE(od.TotalPrice, 0) AS TotalPrice
+                               FROM dbo.Orders AS o
+                               LEFT JOIN dbo.Customers AS c ON o.CustomerID = c.CustomerID
+                               LEFT JOIN dbo.Employees AS e ON o.EmployeeID = e.EmployeeID
+                               LEFT JOIN dbo.Shippers AS sh ON o.ShipperID = sh.ShipperID
+                               LEFT JOIN (
+                                   SELECT OrderID, SUM(Quantity * SalePrice) AS TotalPrice
+                                   FROM dbo.OrderDetails
+                                   GROUP BY OrderID
+                               ) AS od ON od.OrderID = o.OrderID
+                               WHERE (@Status = 0 OR o.Status = @Status)
+                                 AND (@FromTime IS NULL OR o.OrderTime >= @FromTime)
+                                 AND (@ToTime IS NULL OR o.OrderTime <= @ToTime)
+                                 AND (c.CustomerName LIKE @Search OR c.Phone LIKE @Search)
+                               ORDER BY o.OrderID DESC
                                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY";
 
         var data = await connection.QueryAsync<OrderViewInfo>(sqlData, new
@@ -74,23 +104,53 @@ public class OrderRepository : IOrderRepository
 
         string sqlCount = @"
         SELECT COUNT(*)
-        FROM v_OrderList
-        WHERE (@Status = 0 OR Status = @Status)
-          AND (@FromTime IS NULL OR OrderDate >= @FromTime)
-          AND (@ToTime IS NULL OR OrderDate <= @ToTime)
-          AND (@CustomerID IS NULL OR CustomerID = @CustomerID)
-          AND (CustomerName LIKE @Search OR CustomerPhone LIKE @Search)
+        FROM dbo.Orders AS o
+        LEFT JOIN dbo.Customers AS c ON o.CustomerID = c.CustomerID
+        LEFT JOIN dbo.Employees AS e ON o.EmployeeID = e.EmployeeID
+        LEFT JOIN dbo.Shippers AS sh ON o.ShipperID = sh.ShipperID
+        WHERE (@Status = 0 OR o.Status = @Status)
+          AND (@FromTime IS NULL OR o.OrderTime >= @FromTime)
+          AND (@ToTime IS NULL OR o.OrderTime <= @ToTime)
+          AND (@CustomerID IS NULL OR o.CustomerID = @CustomerID)
+          AND (c.CustomerName LIKE @Search OR c.Phone LIKE @Search)
     ";
 
         string sqlData = @"
-        SELECT *, OrderDate AS OrderTime
-        FROM v_OrderList
-        WHERE (@Status = 0 OR Status = @Status)
-          AND (@FromTime IS NULL OR OrderDate >= @FromTime)
-          AND (@ToTime IS NULL OR OrderDate <= @ToTime)
-          AND (@CustomerID IS NULL OR CustomerID = @CustomerID)
-          AND (CustomerName LIKE @Search OR CustomerPhone LIKE @Search)
-        ORDER BY OrderID DESC
+        SELECT o.OrderID,
+               o.CustomerID,
+               o.OrderTime AS OrderTime,
+               o.DeliveryProvince,
+               o.DeliveryAddress,
+               o.EmployeeID,
+               o.AcceptTime,
+               o.ShipperID,
+               o.ShippedTime,
+               o.FinishedTime,
+               o.Status,
+               c.CustomerName,
+               c.ContactName AS CustomerContactName,
+               c.Email AS CustomerEmail,
+               c.Phone AS CustomerPhone,
+               c.Address AS CustomerAddress,
+               e.FullName AS EmployeeName,
+               sh.ShipperName,
+               sh.Phone AS ShipperPhone,
+               COALESCE(od.TotalPrice, 0) AS TotalPrice
+        FROM dbo.Orders AS o
+        LEFT JOIN dbo.Customers AS c ON o.CustomerID = c.CustomerID
+        LEFT JOIN dbo.Employees AS e ON o.EmployeeID = e.EmployeeID
+        LEFT JOIN dbo.Shippers AS sh ON o.ShipperID = sh.ShipperID
+        LEFT JOIN (
+            SELECT OrderID, SUM(Quantity * SalePrice) AS TotalPrice
+            FROM dbo.OrderDetails
+            GROUP BY OrderID
+        ) AS od ON od.OrderID = o.OrderID
+        WHERE (@Status = 0 OR o.Status = @Status)
+          AND (@FromTime IS NULL OR o.OrderTime >= @FromTime)
+          AND (@ToTime IS NULL OR o.OrderTime <= @ToTime)
+          AND (@CustomerID IS NULL OR o.CustomerID = @CustomerID)
+          AND (c.CustomerName LIKE @Search OR c.Phone LIKE @Search)
+        ORDER BY o.OrderID DESC
         OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY
     ";
 
@@ -120,9 +180,36 @@ public class OrderRepository : IOrderRepository
     {
         using var connection = new SqlConnection(_connectionString);
 
-        string sql = @"SELECT *, OrderDate AS OrderTime
-                           FROM v_OrderList
-                           WHERE OrderID = @orderID";
+        string sql = @"SELECT o.OrderID,
+                              o.CustomerID,
+                              o.OrderTime AS OrderTime,
+                              o.DeliveryProvince,
+                              o.DeliveryAddress,
+                              o.EmployeeID,
+                              o.AcceptTime,
+                              o.ShipperID,
+                              o.ShippedTime,
+                              o.FinishedTime,
+                              o.Status,
+                              c.CustomerName,
+                              c.ContactName AS CustomerContactName,
+                              c.Email AS CustomerEmail,
+                              c.Phone AS CustomerPhone,
+                              c.Address AS CustomerAddress,
+                              e.FullName AS EmployeeName,
+                              sh.ShipperName,
+                              sh.Phone AS ShipperPhone,
+                              COALESCE(od.TotalPrice, 0) AS TotalPrice
+                       FROM dbo.Orders AS o
+                       LEFT JOIN dbo.Customers AS c ON o.CustomerID = c.CustomerID
+                       LEFT JOIN dbo.Employees AS e ON o.EmployeeID = e.EmployeeID
+                       LEFT JOIN dbo.Shippers AS sh ON o.ShipperID = sh.ShipperID
+                       LEFT JOIN (
+                           SELECT OrderID, SUM(Quantity * SalePrice) AS TotalPrice
+                           FROM dbo.OrderDetails
+                           GROUP BY OrderID
+                       ) AS od ON od.OrderID = o.OrderID
+                       WHERE o.OrderID = @orderID";
 
         return await connection.QueryFirstOrDefaultAsync<OrderViewInfo>(sql, new { orderID });
     }

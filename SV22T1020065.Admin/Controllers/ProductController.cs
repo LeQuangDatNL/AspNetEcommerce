@@ -4,12 +4,13 @@ using SV22T1020065.BusinessLayers;
 using SV22T1020065.Models.Catalog;
 using SV22T1020065.Models.Common;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
 namespace SV22T1020065.Admin.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = WebUserRoles.Administrator + "," + WebUserRoles.DataManager + "," + WebUserRoles.Employee)]
     public class ProductController : Controller
     {
         private int PAGESIZE = ApplicationContext.PAGE_SIZE;
@@ -37,7 +38,7 @@ namespace SV22T1020065.Admin.Controllers
             ViewBag.SupplierID = input.SupplierID;
             ViewBag.MinPrice = input.MinPrice;
             ViewBag.MaxPrice = input.MaxPrice;
-
+            Console.WriteLine($"Index - Page: {input.Page}, SearchValue: {input.SearchValue}, CategoryID: {input.CategoryID}, SupplierID: {input.SupplierID}, MinPrice: {input.MinPrice}, MaxPrice: {input.MaxPrice}");
             var result = await CatalogDataService.ListProductsAsync(input);
             return View(result);
         }
@@ -45,6 +46,7 @@ namespace SV22T1020065.Admin.Controllers
         public async Task<IActionResult> Search(ProductSearchInput input)
         {
             var result = await CatalogDataService.ListProductsAsync(input);
+            Console.WriteLine($"Index - Page: {input.Page}, SearchValue: {input.SearchValue}, CategoryID: {input.CategoryID}, SupplierID: {input.SupplierID}, MinPrice: {input.MinPrice}, MaxPrice: {input.MaxPrice}");
             ApplicationContext.SetSessionData(SESSION_KEY, input);
             return PartialView("Search", result);
         }
@@ -53,9 +55,12 @@ namespace SV22T1020065.Admin.Controllers
 
         #region PRODUCT CRUD
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            ViewBag.Categories = await SelectListHelper.Categories();
+            ViewBag.Suppliers = await SelectListHelper.Suppliers();
+
+            return View(new Product());
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -73,14 +78,145 @@ namespace SV22T1020065.Admin.Controllers
             return View(product);
         }
 
-        public IActionResult Delete(int id)
+        [HttpPost]
+        public async Task<IActionResult> Edit(int id, Product data, IFormFile Photo)
         {
             ViewBag.ProductId = id;
-            return View();
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Categories = await SelectListHelper.Categories();
+                ViewBag.Suppliers = await SelectListHelper.Suppliers();
+                ViewBag.Photos = await CatalogDataService.ListPhotosAsync(id);
+                ViewBag.Attributes = await CatalogDataService.ListAttributesAsync(id);
+                return View(data);
+            }
+
+            // Xử lý upload ảnh nếu có
+            if (Photo != null && Photo.Length > 0)
+            {
+                // Xóa ảnh cũ nếu có
+                if (!string.IsNullOrEmpty(data.Photo))
+                {
+                    DeleteUploadedFile(data.Photo);
+                }
+                // Lưu ảnh mới
+                string fileName = await SaveUploadedFile(Photo);
+                data.Photo = fileName;
+            }
+
+            // Cập nhật sản phẩm
+            bool success = await CatalogDataService.UpdateProductAsync(data);
+            if (!success)
+            {
+                ModelState.AddModelError("", "Không thể cập nhật sản phẩm. Vui lòng thử lại.");
+                ViewBag.Categories = await SelectListHelper.Categories();
+                ViewBag.Suppliers = await SelectListHelper.Suppliers();
+                ViewBag.Photos = await CatalogDataService.ListPhotosAsync(id);
+                ViewBag.Attributes = await CatalogDataService.ListAttributesAsync(id);
+                return View(data);
+            }
+
+            return RedirectToAction("Edit", new { id });
         }
 
-        #endregion
+        [HttpPost]
+        public async Task<IActionResult> Create(Product data, IFormFile Photo)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Categories = await SelectListHelper.Categories();
+                ViewBag.Suppliers = await SelectListHelper.Suppliers();
+                return View(data);
+            }
 
+            // Xử lý upload ảnh nếu có
+            if (Photo != null && Photo.Length > 0)
+            {
+                string fileName = await SaveUploadedFile(Photo);
+                data.Photo = fileName;
+            }
+
+            // Thêm sản phẩm mới
+            int productId = await CatalogDataService.AddProductAsync(data);
+            if (productId <= 0)
+            {
+                ModelState.AddModelError("", "Không thể thêm sản phẩm. Vui lòng thử lại.");
+                ViewBag.Categories = await SelectListHelper.Categories();
+                ViewBag.Suppliers = await SelectListHelper.Suppliers();
+                return View(data);
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        
+        public async Task<IActionResult> Delete(int id)
+        {
+            var product = await CatalogDataService.GetProductAsync(id);
+            if (product == null)
+                return NotFound();
+
+            ViewBag.CategoryName = (await SelectListHelper.Categories()).FirstOrDefault(c => c.Value == product.CategoryID.ToString())?.Text ?? "";
+            ViewBag.SupplierName = (await SelectListHelper.Suppliers()).FirstOrDefault(s => s.Value == product.SupplierID.ToString())?.Text ?? "";
+            
+            // Kiểm tra xem product có đang được sử dụng không
+            bool isUsed = await CatalogDataService.InUsedProductAsync(id);
+            ViewBag.CanDelete = !isUsed;
+            if (isUsed)
+            {
+                ViewBag.CannotDelete = true;
+                ViewBag.ErrorMessage = "Sản phẩm đang được sử dụng trong đơn hàng. Không thể xóa.";
+            }
+
+            return View(product);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Delete(int id, Product data)
+        {
+            var product = await CatalogDataService.GetProductAsync(id);
+            if (product == null)
+                return NotFound();
+
+            // Kiểm tra xem product có đang được sử dụng không
+            bool isUsed = await CatalogDataService.InUsedProductAsync(id);
+            if (isUsed)
+            {
+                ViewBag.CategoryName = (await SelectListHelper.Categories()).FirstOrDefault(c => c.Value == product.CategoryID.ToString())?.Text ?? "";
+                ViewBag.SupplierName = (await SelectListHelper.Suppliers()).FirstOrDefault(s => s.Value == product.SupplierID.ToString())?.Text ?? "";
+                ViewBag.CannotDelete = true;
+                ViewBag.ErrorMessage = "Sản phẩm đang được sử dụng trong đơn hàng. Không thể xóa.";
+                return View(product);
+            }
+
+            // Xóa ảnh chính nếu có
+            if (!string.IsNullOrEmpty(product.Photo))
+            {
+                DeleteUploadedFile(product.Photo);
+            }
+
+            // Xóa tất cả ảnh phụ
+            var photos = await CatalogDataService.ListPhotosAsync(id);
+            foreach (var photo in photos)
+            {
+                DeleteUploadedFile(photo.Photo);
+            }
+
+            // Xóa sản phẩm
+            bool success = await CatalogDataService.DeleteProductAsync(id);
+            if (!success)
+            {
+                ViewBag.CategoryName = (await SelectListHelper.Categories()).FirstOrDefault(c => c.Value == product.CategoryID.ToString())?.Text ?? "";
+                ViewBag.SupplierName = (await SelectListHelper.Suppliers()).FirstOrDefault(s => s.Value == product.SupplierID.ToString())?.Text ?? "";
+                ViewBag.CannotDelete = true;
+                ViewBag.ErrorMessage = "Không thể xóa sản phẩm. Vui lòng thử lại.";
+                return View(product);
+            }
+
+            return RedirectToAction("Index");
+        }
+        #endregion
         #region ATTRIBUTE
 
         public async Task<IActionResult> ListAttributes(int id)
@@ -156,6 +292,7 @@ namespace SV22T1020065.Admin.Controllers
         public async Task<IActionResult> DeleteAttribute(int id, long attributeId)
         {
             await CatalogDataService.DeleteAttributeAsync(attributeId); // ✅ FIX
+            TempData["Message"] = "Đã xóa thuộc tính thành công.";
             return RedirectToAction("Edit", new { id });
         }
 
@@ -241,6 +378,7 @@ namespace SV22T1020065.Admin.Controllers
             {
                 DeleteUploadedFile(photo.Photo);
                 await CatalogDataService.DeletePhotoAsync(photoId); // ✅ FIX
+                TempData["Message"] = "Đã xóa ảnh thành công.";
             }
 
             return RedirectToAction("Edit", new { id });

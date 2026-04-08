@@ -58,7 +58,7 @@
                                         <a class="btn btn-sm btn-primary" href="@Url.Action("EditPhoto", "Product", new { id = productId, photoId = item.PhotoID })">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a class="btn btn-sm btn-danger" href="@Url.Action("DeletePhoto", "Product", new { id = productId, photoId = item.PhotoID })">
+                                        <a class="btn btn-sm btn-danger" href="@Url.Action("DeletePhoto", "Product", new { id = productId, photoId = item.PhotoID })" onclick="return confirm('Bạn có muốn xóa ảnh này không?');">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </td>

@@ -11,7 +11,7 @@
             </h5>
         </div>
         <div class="card-body">
-            @if (!Model.DataItems.Any())
+            @if (Model == null || !Model.DataItems.Any())
             {
                 <div class="alert alert-info">
                     <i class="bi bi-info-circle me-2"></i>
@@ -28,7 +28,6 @@
                                 <th>Ngày lập</th>
                                 <th>Trạng thái</th>
                                 <th>Nơi giao</th>
-                                <th>Hành động</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -67,11 +66,7 @@
                                         <small>@order.DeliveryProvince</small><br />
                                         <small class="text-muted">@order.DeliveryAddress</small>
                                     </td>
-                                    <td>
-                                        <a href="~/ShopOrder/Details/@order.OrderID" class="btn btn-sm btn-outline-primary">
-                                            <i class="bi bi-eye me-1"></i> Chi tiết
-                                        </a>
-                                    </td>
+
                                 </tr>
                             }
                         </tbody>

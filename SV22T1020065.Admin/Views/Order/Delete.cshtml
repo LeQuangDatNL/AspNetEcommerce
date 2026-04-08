@@ -1,27 +1,50 @@
-﻿@{
-    Layout = null;
+﻿@model SV22T1020065.Models.Sales.OrderViewInfo
+@{
+    ViewBag.Title = "Xóa đơn hàng";
+    var orderId = ViewBag.OrderId as int? ?? 0;
 }
-<div class="modal-header text-bg-danger">
-    <strong class="modal-title">
-        Xóa đơn hàng
-    </strong>
-    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-</div>
 
-<div class="modal-body">
-    <div class="alert alert-danger d-flex align-items-center">
-        <i class="bi bi-info-circle me-2"></i>
-        Bạn có chắc chắn muốn xóa đơn hàng này không?
+@section PageToolBar {
+    <button type="submit" form="formDelete" class="btn btn-primary">
+        <i class="bi bi-check-circle me-1"></i>
+        Xác nhận xóa
+    </button>
+    <a href="@Url.Action("Detail", "Order", new { id = orderId })" class="btn btn-secondary ms-1">
+        <i class="bi bi-arrow-left"></i>
+        Quay lại
+    </a>
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="alert alert-danger d-flex align-items-center mb-3">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            <div>
+                Bạn có chắc chắn muốn xóa đơn hàng <strong>#@Model.OrderID</strong> không?
+                <br/>
+                <small>Đơn hàng sẽ bị xóa vĩnh viễn khỏng thể khôi phục.</small>
+            </div>
+        </div>
+
+        <div class="card card-outline card-danger">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-trash me-2"></i>Xác nhận xóa đơn hàng</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div><strong>Mã đơn hàng:</strong> @Model.OrderID</div>
+                        <div><strong>Khách hàng:</strong> @Model.CustomerName</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div><strong>Ngày lập:</strong> @Model.OrderTime.ToString("dd/MM/yyyy HH:mm")</div>
+                        <div><strong>Trạng thái:</strong> @Model.Status.GetDescription()</div>
+                    </div>
+                </div>
+
+                <form id="formDelete" method="post" asp-action="Delete" asp-controller="Order" asp-route-id="@orderId">
+                </form>
+            </div>
+        </div>
     </div>
-</div>
-
-<div class="modal-footer">
-    <button type="submit" class="btn btn-primary">
-        <i class="bi bi-check"></i> Chấp nhận
-    </button>
-    <button type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal">
-        Đóng
-    </button>
 </div>

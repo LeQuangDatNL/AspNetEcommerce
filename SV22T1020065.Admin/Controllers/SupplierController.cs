@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SV22T1020065.Admin.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = WebUserRoles.Administrator + "," + WebUserRoles.DataManager)]
     public class SupplierController : Controller
     {
         private int PAGESIZE = ApplicationContext.PAGE_SIZE;

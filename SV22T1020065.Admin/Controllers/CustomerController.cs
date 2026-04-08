@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace SV22T1020065.Admin.Controllers
 {
-    [Authorize]
+
+    [Authorize(Roles = WebUserRoles.Administrator + "," + WebUserRoles.DataManager)]
     public class CustomerController : Controller
     {
         private int PAGESIZE = ApplicationContext.PAGE_SIZE;
@@ -124,6 +125,57 @@ namespace SV22T1020065.Admin.Controllers
                 return RedirectToAction("Index");
             await PartnerDataService.DeleteCustomerAsync(id);
             return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> ChangePassword(int id)
+        {
+            ViewBag.Title = "Mật khẩu khách hàng";
+            var customer = await PartnerDataService.GetCustomerAsync(id);
+            if (customer == null)
+                return RedirectToAction("Index");
+
+            return View(customer);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(int id, string NewPassword, string ConfirmPassword)
+        {
+            var customer = await PartnerDataService.GetCustomerAsync(id);
+            if (customer == null)
+                return RedirectToAction("Index");
+
+            if (string.IsNullOrWhiteSpace(NewPassword))
+                ModelState.AddModelError("NewPassword", "Vui lòng nhập mật khẩu mới");
+            else if (NewPassword.Length < 6)
+                ModelState.AddModelError("NewPassword", "Mật khẩu phải có ít nhất 6 ký tự");
+
+            if (string.IsNullOrWhiteSpace(ConfirmPassword))
+                ModelState.AddModelError("ConfirmPassword", "Vui lòng xác nhận mật khẩu");
+            else if (NewPassword != ConfirmPassword)
+                ModelState.AddModelError("ConfirmPassword", "Mật khẩu xác nhận không khớp");
+
+            if (!ModelState.IsValid)
+                return View(customer);
+
+            try
+            {
+                bool result = await AccountDataService.ChangeCustomerPasswordAsync(customer.Email, NewPassword);
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Đổi mật khẩu thành công";
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Có lỗi xảy ra khi đổi mật khẩu");
+                    return View(customer);
+                }
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Có lỗi xảy ra, vui lòng thử lại");
+                return View(customer);
+            }
         }
     }
 }

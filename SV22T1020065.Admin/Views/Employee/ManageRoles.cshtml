@@ -1,12 +1,12 @@
-﻿@model SV22T1020065.Models.HR.Employee
+@model SV22T1020065.Models.HR.Employee
 @{
-    ViewBag.Title = "Mật khẩu nhân viên";
+    ViewBag.Title = "Quản lý quyền nhân viên";
 }
 
 @section PageToolBar {
-    <button type="submit" form="formChangePassword" class="btn btn-primary">
-        <i class="bi bi-key me-1"></i>
-        Đổi mật khẩu
+    <button type="submit" form="formManageRoles" class="btn btn-primary">
+        <i class="bi bi-shield-check me-1"></i>
+        Cập nhật quyền
     </button>
     <a href="~/Employee" class="btn btn-secondary ms-1">
         <i class="bi bi-arrow-left"></i>
@@ -20,12 +20,12 @@
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-shield-lock me-2"></i>
-                    Đổi mật khẩu nhân viên
+                    Quản lý quyền nhân viên
                 </h5>
             </div>
 
             <div class="card-body">
-                <form id="formChangePassword" method="post">
+                <form id="formManageRoles" method="post">
 
                       <fieldset class="mb-4">
                         <legend class="fs-6 text-muted mb-3">
@@ -56,27 +56,21 @@
 
                     <fieldset>
                         <legend class="fs-6 text-muted mb-3">
-                            <i class="bi bi-key me-1"></i>
-                            Thông tin mật khẩu
+                            <i class="bi bi-shield me-1"></i>
+                            Quyền của nhân viên
                         </legend>
 
                         <div class="mb-3">
-                            <label class="form-label">Mật khẩu mới</label>
-                            <input type="password"
-                                   class="form-control"
-                                   name="NewPassword"
-                                   placeholder="Nhập mật khẩu mới" />
-                            @Html.ValidationMessage("NewPassword", new { @class = "text-danger" })
+                            <label class="form-label">Chọn quyền</label>
+                            <select name="SelectedRoles" class="form-select" multiple>
+                                <option value="employee" selected="@((ViewBag.SelectedRoles as List<string>)?.Contains("employee") ?? false)">Nhân viên</option>
+                                <option value="admin" selected="@((ViewBag.SelectedRoles as List<string>)?.Contains("admin") ?? false)">Quản trị</option>
+                                <option value="datamanager" selected="@((ViewBag.SelectedRoles as List<string>)?.Contains("datamanager") ?? false)">Quản lý dữ liệu</option>
+                                <option value="sales" selected="@((ViewBag.SelectedRoles as List<string>)?.Contains("sales") ?? false)">Quản lý bán hàng</option>
+                            </select>
+                            <small class="form-text text-muted">Chọn các quyền cho nhân viên (có thể chọn nhiều)</small>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Xác nhận mật khẩu</label>
-                            <input type="password"
-                                   class="form-control"
-                                   name="ConfirmPassword"
-                                   placeholder="Nhập lại mật khẩu mới" />
-                            @Html.ValidationMessage("ConfirmPassword", new { @class = "text-danger" })
-                        </div>
                         @Html.ValidationSummary(true, "", new { @class = "text-danger" })
                     </fieldset>
 

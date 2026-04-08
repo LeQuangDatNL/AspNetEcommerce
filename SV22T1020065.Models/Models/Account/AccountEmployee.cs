@@ -12,10 +12,10 @@ namespace SV22T1020065.Models.Models.Account
         /// <summary>
         /// Mật khẩu (đã được mã hóa bằng thuật toán MD5)
         /// </summary>
-        public string Password { get; set; } = "d3c84bdd44cb9ca888e0f2b19a5443ba";
+        public string Password { get; set; } = "";
         /// <summary>
         /// Quyền
         /// </summary>
-        public string RoleNames { get; set; } = "employee";
+        public List<string> RolesName { get; set; } = new List<string>();
     }
 }

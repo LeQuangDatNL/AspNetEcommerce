@@ -56,6 +56,10 @@ namespace SV22T1020065.Admin
     public class WebUserRoles
     {
         /// <summary>
+        /// nhân viên
+        /// </summary>
+        public const string Employee = "  employee";
+        /// <summary>
         /// Quản trị
         /// </summary>
         public const string Administrator = "admin";

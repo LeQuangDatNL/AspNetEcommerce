@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace SV22T1020065.Admin.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = WebUserRoles.Administrator)]
     public class EmployeeController : Controller
     {
         private int PAGESIZE = ApplicationContext.PAGE_SIZE;
@@ -133,6 +133,91 @@ namespace SV22T1020065.Admin.Controllers
             // ✅ Xóa
             await HRDataService.DeleteEmployeeAsync(id);
             return RedirectToAction("Index");
+        }
+        [HttpGet]
+        public async Task<IActionResult> ChangePassword(int id)
+        {
+            ViewBag.Title = "Mật khẩu nhân viên";
+            var employee = await HRDataService.GetEmployeeAsync(id);
+            if (employee == null)
+                return RedirectToAction("Index");
+
+            return View(employee);
+        }
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(int id, string NewPassword, string ConfirmPassword)
+        {
+            var employee = await HRDataService.GetEmployeeAsync(id);
+            if (employee == null)
+                return RedirectToAction("Index");
+
+            if (string.IsNullOrWhiteSpace(NewPassword))
+                ModelState.AddModelError("NewPassword", "Vui lòng nhập mật khẩu mới");
+            else if (NewPassword.Length < 6)
+                ModelState.AddModelError("NewPassword", "Mật khẩu phải có ít nhất 6 ký tự");
+
+            if (string.IsNullOrWhiteSpace(ConfirmPassword))
+                ModelState.AddModelError("ConfirmPassword", "Vui lòng xác nhận mật khẩu");
+            else if (NewPassword != ConfirmPassword)
+                ModelState.AddModelError("ConfirmPassword", "Mật khẩu xác nhận không khớp");
+
+            if (!ModelState.IsValid)
+                return View(employee);
+
+            try
+            { 
+                bool result = await AccountDataService.ChangeEmployeePasswordAsync(employee.Email, NewPassword);
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Đổi mật khẩu thành công";
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Có lỗi xảy ra khi đổi mật khẩu");
+                    return View(employee);
+                }
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Có lỗi xảy ra, vui lòng thử lại");
+                return View(employee);
+            }
+        }
+
+        public async Task<IActionResult> ManageRoles(int id)
+        {
+            ViewBag.Title = "Quản lý quyền nhân viên";
+            var employee = await HRDataService.GetEmployeeAsync(id);
+            if (employee == null)
+                return RedirectToAction("Index");
+
+            // Lấy roles hiện tại
+            var roles = await AccountDataService.GetEmployeeRolesAsync(employee.Email);
+            ViewBag.SelectedRoles = roles;
+
+            return View(employee);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ManageRoles(int id, string[] SelectedRoles)
+        {
+            var employee = await HRDataService.GetEmployeeAsync(id);
+            if (employee == null)
+                return RedirectToAction("Index");
+
+            try
+            {
+                await AccountDataService.UpdateEmployeeRolesAsync(employee.Email, SelectedRoles.ToList());
+                TempData["SuccessMessage"] = "Cập nhật quyền thành công";
+                return RedirectToAction("Index");
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Có lỗi xảy ra, vui lòng thử lại");
+                ViewBag.SelectedRoles = SelectedRoles.ToList();
+                return View(employee);
+            }
         }
     }
 }

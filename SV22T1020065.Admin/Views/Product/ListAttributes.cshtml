@@ -46,7 +46,7 @@
                                         <a class="btn btn-sm btn-primary" href="@Url.Action("EditAttribute", "Product", new { id = productId, attributeId = item.AttributeID })">
                                             <i class="bi bi-pencil"></i>
                                         </a>
-                                        <a class="btn btn-sm btn-danger" href="@Url.Action("DeleteAttribute", "Product", new { id = productId, attributeId = item.AttributeID })">
+                                        <a class="btn btn-sm btn-danger" href="@Url.Action("DeleteAttribute", "Product", new { id = productId, attributeId = item.AttributeID })" onclick="return confirm('Bạn có muốn xóa thuộc tính này không?');">
                                             <i class="bi bi-trash"></i>
                                         </a>
                                     </td>

@@ -11,6 +11,7 @@ namespace SV22T1020065.Admin.Controllers
     /// <summary>
     /// Quản lý nhà vận chuyển
     /// </summary>
+    [Authorize(Roles = WebUserRoles.Administrator + "," + WebUserRoles.DataManager)]
     public class ShipperController : Controller
     {
         private int PAGESIZE = ApplicationContext.PAGE_SIZE;
