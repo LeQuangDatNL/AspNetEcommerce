@@ -21,8 +21,6 @@
                         </div>
                         <div class="col-md-6">
                             <p class="mb-1"><strong>Vai trò:</strong> @(userData.Roles != null && userData.Roles.Any() ? string.Join(", ", userData.Roles) : "Chưa gán")</p>
-                            <p class="mb-1"><strong>Mã người dùng:</strong> @userData.UserId</p>
-                            <p class="mb-0 text-muted">Dữ liệu này được lấy từ cookie xác thực hiện tại.</p>
                         </div>
                     </div>
                 }
